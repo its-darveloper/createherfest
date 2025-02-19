@@ -6,8 +6,8 @@ const AboutPage = () => {
     <div className="container mx-auto px-4 py-16">
       <h1 className="text-3xl font-bold text-center mb-8">About CreateHer Fest</h1>
       <p className="text-gray-700 leading-relaxed mb-6">
-        This is a placeholder "About Us" page. You can replace this content with real information about CreateHer Fest.
-        For example, you might want to include details about the event's mission, history, organizers, and values.
+        This is a placeholder About Us page. You can replace this content with real information about CreateHer Fest.
+        For example, you might want to include details about the events mission, history, organizers, and values.
       </p>
       <p className="text-gray-700 leading-relaxed mb-6">
         Feel free to customize this page with your own text, images, and components.
