@@ -1,5 +1,4 @@
 // app/layout.tsx
-import { Toaster } from "@/components/ui/toaster"
 import type { Metadata } from "next";
 import { Inter, Urbanist } from "next/font/google";
 import { Navigation } from "@/components/layout/navigation";

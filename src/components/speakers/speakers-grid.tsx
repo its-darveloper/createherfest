@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import type { Speaker } from '@/types/sanity'
 import { SpeakerCard } from './speaker-card'
 import { Input } from '@/components/ui/input'
@@ -43,7 +43,7 @@ const getExpertiseTags = (speakers: Speaker[]): string[] => {
 }
 
 export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
-  const [speakers, setSpeakers] = useState<Speaker[]>(initialSpeakers)
+  const [speakers] = useState<Speaker[]>(initialSpeakers)
   const [filteredSpeakers, setFilteredSpeakers] = useState<Speaker[]>(initialSpeakers)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)

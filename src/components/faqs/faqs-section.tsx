@@ -87,7 +87,7 @@ interface FAQsSectionProps {
 }
 
 export function FAQsSection({ initialFaqs }: FAQsSectionProps) {
-  const [faqs, setFaqs] = useState<FAQ[]>(initialFaqs)
+  const [faqs] = useState<FAQ[]>(initialFaqs)
   const [filteredFaqs, setFilteredFaqs] = useState<FAQ[]>(initialFaqs)
   const [openFAQs, setOpenFAQs] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState('')

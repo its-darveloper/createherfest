@@ -69,7 +69,7 @@ function formatTime(time: string): string {
 
 
 export function MentorsGrid({ initialMentors }: MentorsGridProps) {
-    const [mentors, setMentors] = useState(initialMentors);
+    const [mentors] = useState(initialMentors);
     const [selectedTrack, setSelectedTrack] = useState("");
     const [selectedExpertise, setSelectedExpertise] = useState("");
     const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);

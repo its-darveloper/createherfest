@@ -18,39 +18,7 @@ interface FloatingElementProps {
   scale?: number[]
 }
 
-function FloatingElement({ 
-  shape, 
-  size, 
-  position, 
-  color,
-  delay = 0,
-  duration = 20,
-  scale = [0.8, 1.2]
-}: FloatingElementProps) {
-  return (
-    <motion.div
-      className={`absolute ${size} ${position} backdrop-blur-3xl rounded-3xl`}
-      initial={{ opacity: 0, scale: 0.5 }}
-      animate={{ 
-        opacity: [0.1, 0.3, 0.1],
-        scale: scale,
-        rotate: [0, 180],
-        y: ['0%', '-20%', '0%']
-      }}
-      transition={{
-        duration: duration,
-        repeat: Infinity,
-        repeatType: "reverse",
-        ease: "easeInOut",
-        delay: delay
-      }}
-      style={{
-        clipPath: shape,
-        background: `linear-gradient(to bottom right, ${color}20, ${color}05)`
-      }}
-    />
-  )
-}
+
 
 export function EventSeries() {
   const [selectedPhase, setSelectedPhase] = useState<number>(0)
