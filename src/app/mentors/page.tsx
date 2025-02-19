@@ -36,6 +36,7 @@ export default async function MentorsPage() {
       <div className="relative z-10">
         <MentorsHero />
         <MentorsGrid initialMentors={mentors} />
+        <h1>Hi</h1>
         <ApplyMentorCTA />
       </div>
     </div>
