@@ -44,7 +44,7 @@ interface MentorsGridProps {
 }
 
 // Helper function to format availability slot
-function formatAvailabilitySlot(slot: any): string {
+function formatAvailabilitySlot(slot: AvailabilitySlot): string {
     const startDate = new Date(slot.startDate);
     const endDate = new Date(slot.endDate);
     const startTime = slot.startTime;
@@ -67,6 +67,13 @@ function formatTime(time: string): string {
     return `${formattedHours}:${minutes} ${period}`;
 }
 
+interface AvailabilitySlot {
+    _key: string;
+    startDate: string;
+    endDate: string;
+    startTime: string;
+    endTime: string;
+}
 
 export function MentorsGrid({ initialMentors }: MentorsGridProps) {
     const [mentors] = useState(initialMentors);
@@ -85,6 +92,8 @@ export function MentorsGrid({ initialMentors }: MentorsGridProps) {
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
     const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
     const { toast } = useToast();
+
+    
 
     // Filter mentors based on track and expertise
     const filteredMentors = mentors.filter(mentor => {
@@ -130,7 +139,7 @@ export function MentorsGrid({ initialMentors }: MentorsGridProps) {
 
 
     const validateForm = () => {
-        let errors: { [key: string]: string } = {};
+        const errors: { [key: string]: string } = {};
 
         if (!formData.name.trim()) {
             errors.name = "Your Name is required";

@@ -8,15 +8,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { typography } from '@/lib/utils/typography'
 
-interface FloatingElementProps {
-  shape: string
-  size: string
-  position: string
-  color: string
-  delay?: number
-  duration?: number
-  scale?: number[]
-}
+
 
 
 

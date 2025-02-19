@@ -273,7 +273,7 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
               >
                 <p className={`${typography.heading} text-white mb-4`}>No speakers found</p>
                 <p className={`${typography.body} text-white/60 mb-6`}>
-                  Try adjusting your search or filters to find what you're looking for.
+                  Try adjusting your search or filters to find what you&apos;re looking for.
                 </p>
                 <Button 
                   onClick={() => {

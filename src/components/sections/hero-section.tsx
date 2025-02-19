@@ -30,8 +30,8 @@ export function Hero() {
       <div 
         className="absolute inset-0 opacity-[0.015] z-[3]"
         style={{
-          backgroundImage: 'linear-gradient(90deg, white 1px, transparent 0), linear-gradient(white 1px, transparent 0)',
-          backgroundSize: '40px 40px'
+          backgroundImage: "linear-gradient(90deg, white 1px, transparent 0), linear-gradient(white 1px, transparent 0)",
+          backgroundSize: "40px 40px"
         }}
       />
 
@@ -60,7 +60,7 @@ export function Hero() {
             <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-full 
                           px-4 md:px-8 py-2 md:py-4 shadow-2xl hover:shadow-white/5 transition-shadow duration-300 text-center">
               <span className={`${typography.caption} text-white/90 text-xs md:text-sm`}>
-                In Partnership with Google's Women Techmakers
+                In Partnership with Google&apos;s Women Techmakers
               </span>
             </div>
           </motion.div>
