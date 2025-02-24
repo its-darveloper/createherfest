@@ -314,15 +314,15 @@ export function UpcomingWorkshops() {
         <div className="text-center max-w-4xl mx-auto mb-16 relative">
           <div className="inline-block relative">
             <div className="absolute inset-0 bg-[#473DC6]/30 blur-xl rounded-full transform scale-150 opacity-30"></div>
-            <div className="relative backdrop-blur-sm bg-[#473DC6]/10 border border-[#473DC6]/30 
-                         px-6 py-2 rounded-full mb-6 overflow-hidden">
+            <div className="shimmer-container relative backdrop-blur-sm bg-[#473DC6]/10 border border-[#473DC6]/30 
+                         px-6 py-2 rounded-full mb-6 overflow-hidden hover:border-white/20 transition-all duration-300">
               <span className={`${typography.caption} text-[#CAA3D6] uppercase tracking-widest`}>
                 UPCOMING WORKSHOPS
               </span>
             </div>
           </div>
           
-          <h2 className={`${typography.title} text-white mb-5`}>
+          <h2 className={`${typography.title} text-white mb-5 text-3xl md:text-4xl`}>
             Learn from Industry Experts
           </h2>
           
