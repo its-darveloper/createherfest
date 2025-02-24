@@ -1,5 +1,4 @@
 // app/layout.tsx
-import { Toaster } from "@/components/ui/toaster"
 import type { Metadata } from "next";
 import { Inter, Urbanist } from "next/font/google";
 import { Navigation } from "@/components/layout/navigation";
@@ -30,7 +29,7 @@ export const metadata: Metadata = {
     siteName: 'CreateHER Fest',
     images: [
       {
-        url: '/og-image.jpg', // Add your OG image
+        url: 'https://createherfest.notion.site/image/attachment%3A1ec11d90-0dd2-4137-ba6b-32b0ddd0d949%3ACreateHER_Fest_Email_Header_(2).png?table=block&id=1a21ac87-fe57-802a-b6a5-ea59b263ebfe&spaceId=0c5e5dd0-9df7-4a03-acd6-a76b92f612c6&width=1420&userId=&cache=v2', // Add your OG image
         width: 1200,
         height: 630,
       },

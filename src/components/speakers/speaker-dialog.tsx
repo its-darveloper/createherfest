@@ -4,7 +4,7 @@
 import { useEffect } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Linkedin, Globe, Twitter } from 'lucide-react'
+import { X, Linkedin } from 'lucide-react'
 import { urlFor } from '@/lib/sanity'
 import { PortableText } from '@portabletext/react'
 import type { Speaker } from '@/types/sanity'

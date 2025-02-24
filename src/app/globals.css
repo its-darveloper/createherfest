@@ -106,9 +106,14 @@ body {
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
   }
   100% {
     transform: translateX(100%);
+    opacity: 0;
   }
 }
 
@@ -116,18 +121,41 @@ body {
   animation: shimmer 2s infinite;
 }
 
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+/* Add new utility class for the button shimmer effect */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
 }
 
-.animate-shimmer {
+.btn-shimmer:hover::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  z-index: -1;
   animation: shimmer 2s infinite;
+}
+
+/* Add new utility class for the shimmer container */
+.shimmer-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: translateX(-100%);
+  animation: shimmer 2s infinite;
+  opacity: 0;
 }
 
 .custom-scrollbar {

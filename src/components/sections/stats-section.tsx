@@ -69,9 +69,10 @@ export function StatsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="inline-block backdrop-blur-md bg-[#473DC6]/10 
+              className="shimmer-container inline-block backdrop-blur-md bg-[#473DC6]/10 
                        border border-white/10 px-4 py-2 rounded-full mb-6
-                       shadow-[0_4px_12px_rgba(71,61,198,0.1)]"
+                       shadow-[0_4px_12px_rgba(71,61,198,0.1)]
+                       hover:border-white/20 transition-all duration-300"
             >
               <span className={`${typography.caption} text-[#CAA3D6] uppercase tracking-widest`}>
                 Our Impact
@@ -83,7 +84,7 @@ export function StatsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
               viewport={{ once: true }}
-              className={`${typography.title} text-white mb-6 relative`}
+              className={`${typography.title} text-white mb-6 relative text-4xl`}
             >
               Making Global Impact
               <div className="absolute inset-0 blur-sm opacity-50 -z-10">Making Global Impact</div>
@@ -133,7 +134,7 @@ export function StatsSection() {
                     whileHover={{ scale: 1.1 }}
                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
-                    <div className={`${typography.heading} text-white mb-4 drop-shadow-lg`}>
+                    <div className={`${typography.heading} text-white mb-4 drop-shadow-lg text-3xl`}>
                       <Counter value={stat.number} suffix={stat.suffix} />
                     </div>
                     <div className={`${typography.body} text-white/70 group-hover:text-white/90 
