@@ -11,6 +11,7 @@ import { typography } from "@/lib/utils/typography"
 
 const navItems = [
   { path: "/faqs", label: "FAQs" },
+  { path: "https://createherfest.fyi/event-calendar", label: "Event Calendar" },
   { path: "https://tally.so/r/wzJkBE", label: "Speak" },
   { path: "https://tally.so/r/wQJJpp", label: "Mentor"},
   { path: "https://tally.so/r/wdjO1y", label: "Volunteer", isExternal: true },
