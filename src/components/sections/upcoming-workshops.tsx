@@ -301,7 +301,7 @@ export function UpcomingWorkshops() {
   }
 
   return (
-    <section className="relative w-full bg-[#150E60] py-20 md:py-28 overflow-hidden">
+    <section className="relative bg-[#150E60] py-20 md:py-28 overflow-hidden">
       {/* Background decorations */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#0F0A40]/80 to-transparent"></div>

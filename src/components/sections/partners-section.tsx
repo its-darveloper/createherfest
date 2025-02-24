@@ -52,7 +52,7 @@ export function PartnersSection() {
   }
 
   return (
-    <section className="relative w-full bg-[#150E60] py-16 md:py-24 overflow-hidden">
+    <section className="relative bg-[#150E60] py-16 md:py-24 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/4 w-1/2 h-1/3 bg-[#473DC6]/5 rounded-full blur-[150px] opacity-60 transform -translate-x-1/2" />

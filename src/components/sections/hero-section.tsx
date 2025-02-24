@@ -10,7 +10,7 @@ import { typography } from '@/lib/utils/typography'
 
 export function Hero() {
   return (
-    <section className="relative w-full min-h-screen overflow-hidden hero-section">
+    <section className="relative min-h-screen overflow-hidden hero-section">
       {/* Background Image */}
       <Image 
         src="/background.png"

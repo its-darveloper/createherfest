@@ -54,7 +54,7 @@ function Counter({ value, suffix = "", duration = 2 }: CounterProps) {
 
 export function StatsSection() {
     return (
-      <section className="relative w-full bg-[#150E60] py-16 md:py-32 stats-section border-y border-white/10 overflow-hidden">
+      <section className="relative bg-[#150E60] py-16 md:py-32 stats-section border-y border-white/10 overflow-hidden">
         {/* Background blur effects */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 -left-1/4 w-96 h-96 bg-[#473DC6]/30 rounded-full blur-[128px]" />

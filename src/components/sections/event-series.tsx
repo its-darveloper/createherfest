@@ -72,7 +72,7 @@ export function EventSeries() {
   ]
 
   return (
-    <section className="relative w-full bg-[#150E60] py-16 md:py-24 overflow-hidden">
+    <section className="relative bg-[#150E60] py-16 md:py-24 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 -left-1/4 w-96 h-96 bg-[#473DC6]/30 rounded-full blur-[128px]" />

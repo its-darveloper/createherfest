@@ -65,7 +65,7 @@ export function AboutSection() {
   }
 
   return (
-    <section className="relative w-full bg-[#150E60] overflow-hidden py-16 md:py-24 section about-section">
+    <section className="relative bg-[#150E60] overflow-hidden py-16 md:py-24 section about-section">
       {/* Animated background elements */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Learning themed elements */}

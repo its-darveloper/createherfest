@@ -109,7 +109,7 @@ export function Navigation() {
             <nav className="flex items-center justify-between h-16 md:h-20">
               {/* Logo */}
               <Link href="/" className="flex items-center relative z-50 group">
-                <div className="relative h-25 w-auto aspect-[3/1]">
+                <div className="relative h-20 w-auto aspect-[3/1]">
                   <Image
                     src="/chf.svg"
                     alt="CreateHER Fest"
