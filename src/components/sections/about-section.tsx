@@ -126,12 +126,13 @@ export function AboutSection() {
           transition={{ duration: 0.6 }}
           className="text-center max-w-4xl mx-auto mb-12 md:mb-20"
         >
-          <div className="inline-block bg-[#473DC6]/20 px-4 py-2 rounded-full mb-6">
+          <div className="shimmer-container inline-block bg-[#473DC6]/20 px-4 py-2 rounded-full mb-6
+                        border border-[#473DC6]/30 hover:border-white/20 transition-all duration-300">
             <span className={`${typography.caption} text-[#CAA3D6] uppercase tracking-widest`}>
               About CreateHER Fest
             </span>
           </div>
-          <h2 className={`${typography.title} text-white mb-6`}>
+          <h2 className={`${typography.title} text-white mb-6 text-4xl`}>
             Transforming Tech, Empowering Women
           </h2>
           <p className={`${typography.section} text-white/80 max-w-3xl mx-auto`}>

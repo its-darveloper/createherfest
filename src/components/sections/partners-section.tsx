@@ -75,7 +75,7 @@ export function PartnersSection() {
             </div>
           </div>
           
-          <h2 className={`${typography.title} text-white mb-5`}>
+          <h2 className={`${typography.title} text-white mb-5 text-3xl md:text-4xl`}>
             Supported by Innovative Leaders
           </h2>
           

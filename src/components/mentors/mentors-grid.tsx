@@ -93,7 +93,6 @@ export function MentorsGrid({ initialMentors }: MentorsGridProps) {
     const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
     const { toast } = useToast();
 
-    
 
     // Filter mentors based on track and expertise
     const filteredMentors = mentors.filter(mentor => {
@@ -164,32 +163,61 @@ export function MentorsGrid({ initialMentors }: MentorsGridProps) {
     };
 
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Inside MentorsGrid component
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (validateForm()) {
-            // Form is valid, proceed with submission logic here
-            const bookingData = {
-                ...formData,
-                additionalEmails: additionalEmails,
-                mentorId: selectedMentor?._id,
-            };
-            console.log("Booking Request Data:", bookingData);
-            // alert("Booking request submitted (placeholder - check console)");
+            try {
+                // Form is valid, submit to API
+                const bookingData = {
+                    mentorId: selectedMentor?._id,
+                    menteeName: formData.name,       // Changed key to menteeName
+                    menteeEmail: formData.email,      // Changed key to menteeEmail
+                    additionalParticipantEmails: additionalEmails, // Changed key to additionalParticipantEmails (plural, Participant)
+                    projectDetails: formData.projectDetails,
+                    sessionGoals: formData.sessionGoals,
+                    timeSlotId: formData.selectedSlotKey  // Changed key to timeSlotId
+                };
 
-            setFormData({
-                name: "",
-                email: "",
-                projectDetails: "",
-                sessionGoals: "",
-                selectedSlotKey: ""
-            });
-            setAdditionalEmails([]);
-            setSelectedMentor(null);
-            setIsConfirmationOpen(true); // Open confirmation dialog instead of toast for success
-            // toast({
-            //     title: "Booking Request Submitted!",
-            //     description: "We'll get back to you shortly.",
-            // }); // Replaced by confirmation dialog
+                console.log('Submitting booking data:', bookingData);
+                console.log('Selected Mentor Object:', selectedMentor);
+
+                // Send data to API endpoint (no changes needed here)
+                const response = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bookingData),
+                });
+
+                const result = await response.json();
+                console.log('API response:', result);
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Failed to submit booking');
+                }
+
+                // Reset form and show confirmation (no changes needed here)
+                setFormData({
+                    name: "",
+                    email: "",
+                    projectDetails: "",
+                    sessionGoals: "",
+                    selectedSlotKey: ""
+                });
+                setAdditionalEmails([]);
+                setSelectedMentor(null);
+                setIsConfirmationOpen(true);
+
+            } catch (error) {
+                console.error('Error submitting booking:', error);
+                toast({
+                    title: "Submission Error",
+                    description: error instanceof Error ? error.message : "Failed to submit booking request",
+                    variant: "destructive",
+                });
+            }
         } else {
             toast({
                 title: "Error",
@@ -198,7 +226,6 @@ export function MentorsGrid({ initialMentors }: MentorsGridProps) {
             });
         }
     };
-
 
     return (
         <section id="mentors-grid" className="container mx-auto px-4 py-16">
