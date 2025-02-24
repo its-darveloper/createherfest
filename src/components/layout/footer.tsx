@@ -35,8 +35,8 @@ export function Footer() {
     ],
     'Resources': [
       { label: 'Code of Conduct', url: '/code-of-conduct', isExternal: false },
-      { label: 'Privacy Policy', url: '/privacy', isExternal: false },
-      { label: 'Terms of Use', url: '/terms', isExternal: false },
+      { label: 'Privacy Policy', url: '/privacy-policy', isExternal: false },
+      { label: 'Terms of Use', url: '/terms-and-conditions', isExternal: false },
       { label: 'FAQ Center', url: '/faqs', isExternal: false }
     ]
   }
@@ -162,7 +162,7 @@ export function Footer() {
             <p className={`${typography.caption} text-white/60 text-center md:text-right`}>
               © {new Date().getFullYear()} CreateHER Fest
               <span className="hidden md:inline"> | </span>
-              <span className="block md:inline">Developed by Darveloper</span>
+              <span className="block md:inline">Developed by <a href='https://x.com/@darveloper'>Darveloper</a></span>
             </p>
           </div>
         </div>
