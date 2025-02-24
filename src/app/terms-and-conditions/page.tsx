@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from 'framer-motion'
-import { Scale, BookOpen, Brain, FileCheck, AlertTriangle } from 'lucide-react'
+import { Scale, BookOpen, Brain, AlertTriangle } from 'lucide-react'
 import { typography } from '@/lib/utils/typography'
 
 interface FloatingElementProps {
@@ -168,7 +168,7 @@ export default function TermsPage() {
                 <div>
                   <h3 className={`${typography.subheading} text-white mb-2`}>Eligibility</h3>
                   <p className={`${typography.body} text-white/70`}>
-                    CreateHER Fest is open to individuals who meet the event's eligibility requirements. 
+                    CreateHER Fest is open to individuals who meet the event&apos;s eligibility requirements. 
                     Participation may be limited based on specific event rules or sponsorship conditions.
                   </p>
                 </div>
@@ -223,7 +223,7 @@ export default function TermsPage() {
                   <h2 className={`${typography.heading} text-white mb-4`}>Liability</h2>
                   <div className="space-y-4">
                     <p className={`${typography.body} text-white/70`}>
-                      <strong className="text-white">No Warranty:</strong> CreateHER Fest is provided "as is," 
+                      <strong className="text-white">No Warranty:</strong> CreateHER Fest is provided &quot;as is,&quot; 
                       and we make no guarantees about the availability or quality of services.
                     </p>
                     <p className={`${typography.body} text-white/70`}>

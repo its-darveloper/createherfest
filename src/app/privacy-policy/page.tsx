@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from 'framer-motion'
-import { Shield, Mail, Lock, Database, FileText } from 'lucide-react'
+import { Shield, Mail, Lock, Database } from 'lucide-react'
 import { typography } from '@/lib/utils/typography'
 
 interface FloatingElementProps {
