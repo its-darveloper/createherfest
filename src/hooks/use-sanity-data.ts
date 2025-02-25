@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { client } from '@/lib/sanity'
 import type { FAQ, Workshop, Partner } from '@/types/sanity'
+import { getResourcesByTopic, getResources, getResourcesByType } from '@/lib/sanity'
 
 export const useFAQs = () => {
   return useQuery({
@@ -65,6 +66,21 @@ export const usePartners = () => {
         }
       `)
       return partners
+    }
+  })
+}
+
+export const useResources = (topic?: string, type?: string) => {
+  return useQuery({
+    queryKey: ['resources', topic, type],
+    queryFn: async () => {
+      if (topic) {
+        return await getResourcesByTopic(topic)
+      } else if (type) {
+        return await getResourcesByType(type)
+      } else {
+        return await getResources()
+      }
     }
   })
 }

@@ -93,3 +93,19 @@ export interface PortableTextBlock {
     }[];
     email?: string;
   }
+
+  export interface Resource {
+    _id: string;
+    _type: 'resource';
+    title: string;
+    description: string;
+    url: string;
+    resourceType: 'video' | 'online_course' | 'reading' | 'interactive_tutorial' | 'coding_question' | 'quiz';
+    topics?: Array<'ai_ml' | 'cyber_security' | 'data_in_tech' | 'data_structures' | 
+                  'algorithms' | 'for_educators' | 'branding_story' | 'ar_vr' | 
+                  'blockchain' | 'cross_team_collaboration' | 'project_planning'>;
+    programmingLanguage?: 'javascript' | 'python' | 'java' | 'cpp' | 'na';
+    experienceLevel: 'beginner' | 'intermediate' | 'advanced';
+    estimatedTime: string;
+    creator?: string;
+  }

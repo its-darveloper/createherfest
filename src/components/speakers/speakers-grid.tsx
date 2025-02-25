@@ -1,9 +1,9 @@
 // components/speakers/speakers-grid.tsx
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Filter, X, Check } from 'lucide-react'
 import type { Speaker } from '@/types/sanity'
 import { SpeakerCard } from './speaker-card'
 import { Input } from '@/components/ui/input'
@@ -15,41 +15,25 @@ interface SpeakersGridProps {
 }
 
 // Number of speakers per page
-const SPEAKERS_PER_PAGE = 16;
+const SPEAKERS_PER_PAGE = 12;
 
-// Get expertise tags function remains the same...
-const getExpertiseTags = (speakers: Speaker[]): string[] => {
-  const allTags = new Set<string>()
-  
-  speakers.forEach(speaker => {
-    if (!speaker.title) return
-    
-    const keywords = [
-      'AI', 'Machine Learning', 'ML', 'Blockchain', 'AR/VR', 'AR', 'VR', 'XR',
-      'Web3', 'Data Science', 'Engineering', 'Design', 'UX', 'Product', 
-      'Marketing', 'Developer', 'Software', 'Cybersecurity', 'Frontend', 'Backend',
-      'Full Stack', 'Cloud', 'DevOps', 'Research', 'IoT', 'Mobile', 'Game',
-      'Hardware', 'Robotics', 'Ethics', 'Leadership', 'Executive', 'Investor'
-    ]
-    
-    keywords.forEach(keyword => {
-      if (speaker.title && speaker.title.includes(keyword)) {
-        allTags.add(keyword)
-      }
-    })
-  })
-  
-  return Array.from(allTags).sort()
-}
+// Expertise areas for filtering
+const EXPERTISE_AREAS = [
+  { id: 'ai-ml', name: 'AI & Machine Learning', keywords: ['AI', 'Machine Learning', 'ML', 'Data Science', 'NLP'] },
+  { id: 'vr-ar', name: 'AR & VR', keywords: ['AR', 'VR', 'XR', 'Augmented Reality', 'Virtual Reality', 'Extended Reality'] },
+  { id: 'blockchain', name: 'Blockchain', keywords: ['Blockchain', 'Web3', 'Crypto', 'NFT', 'DeFi'] },
+  { id: 'design', name: 'Design', keywords: ['Design', 'UX', 'UI', 'User Experience', 'Product Design'] },
+  { id: 'engineering', name: 'Engineering', keywords: ['Engineer', 'Developer', 'Full Stack', 'Frontend', 'Backend', 'DevOps'] },
+  { id: 'leadership', name: 'Leadership', keywords: ['CEO', 'CTO', 'Founder', 'Director', 'Head', 'Leader', 'Executive'] },
+]
 
 export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
   const [speakers] = useState<Speaker[]>(initialSpeakers)
   const [filteredSpeakers, setFilteredSpeakers] = useState<Speaker[]>(initialSpeakers)
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedExpertise, setSelectedExpertise] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  
-  const categories = getExpertiseTags(initialSpeakers)
+  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false)
   
   // Calculate total pages
   const totalPages = Math.ceil(filteredSpeakers.length / SPEAKERS_PER_PAGE)
@@ -59,6 +43,22 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
     (currentPage - 1) * SPEAKERS_PER_PAGE,
     currentPage * SPEAKERS_PER_PAGE
   )
+  
+  // Check if a speaker has expertise in selected areas
+  const hasExpertise = useCallback((speaker: Speaker, expertiseIds: string[]): boolean => {
+    if (expertiseIds.length === 0) return true
+    
+    const speakerTitle = speaker.title?.toLowerCase() || ''
+    
+    return expertiseIds.some(id => {
+      const area = EXPERTISE_AREAS.find(a => a.id === id)
+      if (!area) return false
+      
+      return area.keywords.some(keyword => 
+        speakerTitle.includes(keyword.toLowerCase())
+      )
+    })
+  }, [])
   
   // Apply filtering
   useEffect(() => {
@@ -74,17 +74,30 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
       )
     }
     
-    // Apply category filter
-    if (selectedCategory) {
-      result = result.filter(speaker => 
-        speaker.title && speaker.title.includes(selectedCategory)
-      )
+    // Apply expertise filter
+    if (selectedExpertise.length > 0) {
+      result = result.filter(speaker => hasExpertise(speaker, selectedExpertise))
     }
     
     setFilteredSpeakers(result)
     // Reset to first page when filters change
     setCurrentPage(1)
-  }, [searchTerm, selectedCategory, speakers])
+  }, [searchTerm, selectedExpertise, speakers, hasExpertise])
+  
+  // Toggle expertise filter
+  const toggleExpertise = (id: string) => {
+    setSelectedExpertise(prev => 
+      prev.includes(id)
+        ? prev.filter(item => item !== id)
+        : [...prev, id]
+    )
+  }
+  
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm('')
+    setSelectedExpertise([])
+  }
   
   // Handle page change
   const goToPage = (page: number) => {
@@ -183,9 +196,9 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
     <section id="speakers-grid" className="relative py-12 md:py-16">
       <div className="container mx-auto px-4">
         {/* Search and filter */}
-        <div className="mb-10 max-w-3xl mx-auto">
-          {/* Search input remains the same... */}
+        <div className="mb-10 max-w-4xl mx-auto relative z-10">
           <div className="flex flex-col sm:flex-row gap-4 items-center mb-6">
+            {/* Search input */}
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-5 h-5" />
               <Input
@@ -193,51 +206,136 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
                 placeholder="Search speakers by name, title, or company..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 h-12"
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 h-12 rounded-xl"
+                aria-label="Search speakers"
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/90 transition-colors duration-200"
+                  aria-label="Clear search"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
+            
+            {/* Filter button */}
+            <Button
+              variant="outline"
+              className={`bg-white/5 border-white/10 text-white h-12 rounded-xl min-w-36 relative
+                       hover:bg-white/10 hover:border-white/20 transition-all duration-300
+                       ${isFilterMenuOpen ? 'bg-white/10 border-white/20' : ''}`}
+              onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}
+            >
+              <Filter className="w-5 h-5 mr-2" />
+              Filter
+              {selectedExpertise.length > 0 && (
+                <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#CAA3D6] flex items-center justify-center text-xs font-semibold text-[#0A083D]">
+                  {selectedExpertise.length}
+                </span>
+              )}
+            </Button>
           </div>
           
-          {/* Category filters remain the same... */}
-          {categories.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedCategory(null)}
-                className={`rounded-full px-4 h-8 flex items-center text-sm ${
-                  selectedCategory === null 
-                    ? 'bg-[#473DC6] text-white' 
-                    : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-                }`}
+          {/* Filter dropdown menu */}
+          <AnimatePresence>
+            {isFilterMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute z-20 w-full bg-[#1c144d] border border-white/10 rounded-xl shadow-xl p-4 mt-2"
               >
-                All
-              </Button>
-              {categories.map(category => (
-                <Button
-                  key={category}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                  className={`rounded-full px-4 h-8 flex items-center text-sm ${
-                    selectedCategory === category 
-                      ? 'bg-[#473DC6] text-white' 
-                      : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
-                  }`}
-                >
-                  {category}
-                </Button>
-              ))}
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className={`${typography.subheading} text-white`}>Filter by expertise</h3>
+                  <button
+                    onClick={clearFilters}
+                    className="text-[#CAA3D6] hover:text-white text-sm transition-colors duration-200"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  {EXPERTISE_AREAS.map((area) => (
+                    <button
+                      key={area.id}
+                      onClick={() => toggleExpertise(area.id)}
+                      className={`flex items-center p-3 rounded-lg border transition-all duration-200
+                               ${selectedExpertise.includes(area.id)
+                                 ? 'bg-[#473DC6]/20 border-[#473DC6]/50 text-white'
+                                 : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:border-white/20'
+                               }`}
+                    >
+                      <div className={`w-5 h-5 rounded border flex items-center justify-center mr-3
+                                     ${selectedExpertise.includes(area.id)
+                                       ? 'bg-[#473DC6] border-[#473DC6]'
+                                       : 'border-white/30'
+                                     }`}
+                      >
+                        {selectedExpertise.includes(area.id) && (
+                          <Check className="w-3 h-3 text-white" />
+                        )}
+                      </div>
+                      <span className={typography.body}>{area.name}</span>
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="flex justify-end mt-4">
+                  <Button
+                    className="bg-[#473DC6] hover:bg-[#5e50ff] text-white"
+                    onClick={() => setIsFilterMenuOpen(false)}
+                  >
+                    Apply Filters
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {/* Active filters display */}
+          {selectedExpertise.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {selectedExpertise.map(id => {
+                const area = EXPERTISE_AREAS.find(a => a.id === id)
+                return area ? (
+                  <div 
+                    key={id}
+                    className="bg-[#473DC6]/20 border border-[#473DC6]/30 rounded-full px-3 py-1.5
+                             flex items-center gap-2"
+                  >
+                    <span className={`${typography.caption} text-white`}>{area.name}</span>
+                    <button
+                      onClick={() => toggleExpertise(id)}
+                      className="text-white/70 hover:text-white"
+                      aria-label={`Remove ${area.name} filter`}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : null
+              })}
+              <button
+                onClick={clearFilters}
+                className="text-[#CAA3D6] hover:text-white text-sm transition-colors duration-200 ml-2"
+              >
+                Clear all
+              </button>
             </div>
           )}
         </div>
         
         {/* Results count with pagination info */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <p className={`${typography.body} text-white/60`}>
-            Showing {Math.min(SPEAKERS_PER_PAGE, currentSpeakers.length)} of {filteredSpeakers.length} 
+            Showing {Math.min(filteredSpeakers.length, currentSpeakers.length)} of {filteredSpeakers.length} 
             {filteredSpeakers.length === 1 ? ' speaker' : ' speakers'}
-            {selectedCategory && <span> in <span className="text-[#CAA3D6]">{selectedCategory}</span></span>}
+            {selectedExpertise.length > 0 && (
+              <span> matching selected filters</span>
+            )}
           </p>
           
           {totalPages > 1 && (
@@ -249,7 +347,7 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
         
         {/* Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {currentSpeakers.map(speaker => (
               <motion.div
                 key={speaker._id}
@@ -257,7 +355,7 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.4 }}
               >
                 <SpeakerCard speaker={speaker} />
               </motion.div>
@@ -270,17 +368,16 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
+                className="bg-white/5 border border-white/10 rounded-2xl p-8 max-w-xl mx-auto"
               >
-                <p className={`${typography.heading} text-white mb-4`}>No speakers found</p>
+                <h3 className={`${typography.heading} text-white mb-4`}>No speakers found</h3>
                 <p className={`${typography.body} text-white/60 mb-6`}>
+                  We couldn&apos;t find any speakers matching your current search criteria. 
                   Try adjusting your search or filters to find what you&apos;re looking for.
                 </p>
                 <Button 
-                  onClick={() => {
-                    setSearchTerm('')
-                    setSelectedCategory(null)
-                  }}
-                  className="bg-[#473DC6] hover:bg-[#5e50ff]"
+                  onClick={clearFilters}
+                  className="bg-[#473DC6] hover:bg-[#5e50ff] text-white px-6"
                 >
                   Clear all filters
                 </Button>
@@ -299,7 +396,7 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
               onClick={() => goToPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="w-10 h-10 p-0 bg-white/5 text-white/70 hover:bg-white/10 
-                       disabled:opacity-40 disabled:cursor-not-allowed"
+                       disabled:opacity-40 disabled:cursor-not-allowed rounded-lg"
               aria-label="Previous page"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -315,7 +412,7 @@ export function SpeakersGrid({ initialSpeakers }: SpeakersGridProps) {
               onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className="w-10 h-10 p-0 bg-white/5 text-white/70 hover:bg-white/10 
-                       disabled:opacity-40 disabled:cursor-not-allowed"
+                       disabled:opacity-40 disabled:cursor-not-allowed rounded-lg"
               aria-label="Next page"
             >
               <ChevronRight className="w-5 h-5" />

@@ -144,3 +144,71 @@ export async function getMentor(id: string): Promise<Mentor | undefined> {
     }
   `, { id })
 }
+
+export interface Resource {
+  _id: string;
+  _type: 'resource';
+  title: string;
+  description: string;
+  url: string;
+  resourceType: 'video' | 'online_course' | 'reading' | 'interactive_tutorial' | 'coding_question' | 'quiz';
+  topics?: string[];
+  programmingLanguage?: string;
+  experienceLevel: 'beginner' | 'intermediate' | 'advanced';
+  estimatedTime: string;
+  creator?: string;
+}
+
+export async function getResources(): Promise<Resource[]> {
+  return client.fetch(`
+    *[_type == "resource"] {
+      _id,
+      _type,
+      title,
+      description,
+      url,
+      resourceType,
+      topics,
+      programmingLanguage,
+      experienceLevel,
+      estimatedTime,
+      creator
+    } | order(title asc)
+  `)
+}
+
+export async function getResourcesByTopic(topic: string): Promise<Resource[]> {
+  return client.fetch(`
+    *[_type == "resource" && $topic in topics] {
+      _id,
+      _type,
+      title,
+      description,
+      url,
+      resourceType,
+      topics,
+      programmingLanguage,
+      experienceLevel,
+      estimatedTime,
+      creator
+    } | order(title asc)
+  `, { topic })
+}
+
+export async function getResourcesByType(type: string): Promise<Resource[]> {
+  return client.fetch(`
+    *[_type == "resource" && resourceType == $type] {
+      _id,
+      _type,
+      title,
+      description,
+      url,
+      resourceType,
+      topics,
+      programmingLanguage,
+      experienceLevel,
+      estimatedTime,
+      creator
+    } | order(title asc)
+  `, { type })
+}
