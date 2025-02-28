@@ -6,19 +6,16 @@ import { BookingForm } from '@/components/mentors/booking-form'
 import { getMentorById } from '@/lib/sanity/queries'
 
 // Define correct page props for App Router
-type Props = {
+interface Props {
   params: { id: string };
-  searchParams: { date?: string, time?: string };
+  searchParams: { date?: string; time?: string };
 }
 
 export async function generateMetadata({ 
   params,
   searchParams 
 }: Props): Promise<Metadata> {
-  // Ensure params.id is properly handled as potentially async
-  // by using object destructuring instead of direct property access
-  const { id } = params;
-  const mentor = await getMentorById(id);
+  const mentor = await getMentorById(params.id);
 
   if (!mentor) {
     return {
@@ -36,8 +33,7 @@ export default async function BookingPage({
   params,
   searchParams 
 }: Props) {
-  // Use object destructuring to handle params properly
-  const { id } = params;
+  const id = params.id;
   const date = searchParams.date;
   const time = searchParams.time;
 
@@ -129,5 +125,5 @@ export default async function BookingPage({
         </div>
       </div>
     </main>
-  )
+  );
 }
