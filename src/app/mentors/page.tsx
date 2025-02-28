@@ -1,4 +1,4 @@
-// src/app/mentors/page.tsx (improved hero section)
+// src/app/mentors/page.tsx
 import { Metadata } from 'next'
 import { Suspense } from 'react'
 import { ChevronDown } from 'lucide-react'
@@ -9,13 +9,14 @@ import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = {
   title: 'Connect with Mentors | CreateHER Fest',
-  description: 'Book sessions with industry experts to get guidance on your Idea-thon project.',
+  description: 'Book sessions with industry experts to get guidance on your project.',
 }
 
-export default async function MentorsPage() {
+// Client component with search params is now properly wrapped in Suspense
+export default function MentorsPage() {
   return (
     <main className="min-h-screen bg-[#150E60] text-[#f1eae7] relative overflow-hidden">
-      {/* Enhanced animated background elements */}
+      {/* Background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[10%] -right-40 w-[600px] h-[600px] bg-[#473dc6]/30 rounded-full blur-[100px] animate-pulse-slow" />
         <div className="absolute bottom-[20%] -left-40 w-[500px] h-[500px] bg-[#caa3d6]/20 rounded-full blur-[120px] animate-pulse-slower" />
@@ -49,7 +50,7 @@ export default async function MentorsPage() {
             </span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-[#f1eae7]/80 max-w-3xl mx-auto leading-relaxed text-center mb-12 animate-fade-in-up">
+          <p className="text-xl md:text-2xl text-[#f1eae7]/80 max-w-[90%] md:max-w-2xl mx-auto leading-relaxed text-center mb-12 animate-fade-in-up">
             Book a session with industry experts who will guide you through your Idea-thon project 
             and help you transform your concept into reality.
           </p>
@@ -69,12 +70,6 @@ export default async function MentorsPage() {
               <div className="text-[#f1eae7]/70 text-sm mt-1">Expertise Areas</div>
             </div>
           </div>
-          
-          {/* Scroll indicator
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center animate-bounce-slow mt-10">
-            <span className="text-[#f1eae7]/60 text-sm mb-2">Browse Mentors</span>
-            <ChevronDown className="h-6 w-6 text-[#caa3d6]" />
-          </div> */}
         </div>
       </div>
         
@@ -134,11 +129,14 @@ export default async function MentorsPage() {
         </div>
       </div>
         
-      {/* Filter Bar */}
+      {/* Filter Bar - Wrap in Suspense boundary */}
       <div className="relative z-10 container mx-auto px-4 md:px-6">
-        <MentorFilterBar />
+        {/* This is where we need to wrap the client components in Suspense */}
+        <Suspense fallback={<div className="w-full h-12 bg-[#473dc6]/20 animate-pulse rounded-lg mb-8"></div>}>
+          <MentorFilterBar />
+        </Suspense>
         
-        {/* Mentor Grid */}
+        {/* Mentor Grid is already wrapped in Suspense */}
         <Suspense fallback={<MentorsSkeleton />}>
           <MentorGrid />
         </Suspense>

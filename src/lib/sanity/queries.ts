@@ -9,9 +9,11 @@ const client = createClient({
   useCdn: process.env.NODE_ENV === 'production', // Use CDN in production
   token: process.env.SANITY_API_TOKEN, // Make sure this is present
   
-  // Additional configuration for better error handling
+  // REMOVE this property causing the warning
+  // withCredentials: true,
+  
+  // Keep these if needed
   ignoreBrowserTokenWarning: true,
-  withCredentials: true,
   perspective: 'published',
 });
 

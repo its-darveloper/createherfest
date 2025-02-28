@@ -11,12 +11,7 @@ import { Calendar, Clock, Briefcase, Award, User, MapPin, ExternalLink, Linkedin
 import { AvailabilityCalendar } from '@/components/mentors/availability-calendar'
 import { getMentorById } from '@/lib/sanity/queries'
 
-// Define the type for page props
-type PageProps = {
-  params: { id: string }
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: any): Promise<Metadata> {
   const id = params.id;
   const mentor = await getMentorById(id);
   
@@ -34,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function MentorProfilePage({ params }: PageProps) {
+export default async function MentorProfilePage({ params }: any) {
   const id = params.id;
   const mentor = await getMentorById(id);
   

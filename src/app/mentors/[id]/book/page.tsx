@@ -1,22 +1,13 @@
 // src/app/mentors/[id]/book/page.tsx
 import { Metadata } from 'next'
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { BookingForm } from '@/components/mentors/booking-form'
-import { getMentorById } from '@/lib/sanity/queries'
+import Link from "next/link"
+import { notFound } from "next/navigation"
+import { BookingForm } from "@/components/mentors/booking-form"
+import { getMentorById } from "@/lib/sanity/queries"
 
-// @ts-nocheck
+// Remove all explicit typing for the page props and let Next.js infer them
 
-// Define correct page props for App Router
-interface Props {
-  params: { id: string };
-  searchParams: { date?: string; time?: string };
-}
-
-export async function generateMetadata({ 
-  params,
-  searchParams 
-}: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: any): Promise<Metadata> {
   const mentor = await getMentorById(params.id);
 
   if (!mentor) {
@@ -31,10 +22,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function BookingPage({ 
-  params,
-  searchParams 
-}: Props) {
+export default async function BookingPage({ params, searchParams }: any) {
   const id = params.id;
   const date = searchParams.date;
   const time = searchParams.time;
