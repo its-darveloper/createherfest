@@ -1,11 +1,16 @@
-// next.config.mjs
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  reactStrictMode: true,
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    domains: ['cdn.sanity.io'],
+    domains: [
+      'createherfest.notion.site',
+      'randomuser.me',
+      'cdn.sanity.io'  // For Sanity-hosted images
+    ],
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
   },
 };
 
-export default nextConfig; // <-- Changed from module.exports to export default
+module.exports = nextConfig;

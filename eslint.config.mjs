@@ -14,3 +14,4 @@ const eslintConfig = [
 ];
 
 export default eslintConfig;
+//"next/core-web-vitals", "next/typescript"

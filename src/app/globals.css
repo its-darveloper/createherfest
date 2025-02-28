@@ -175,3 +175,60 @@ body {
   background-color: rgba(71, 61, 198, 0.3);
   border-radius: 20px;
 }
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Add to globals.css */
+.animate-text-shimmer {
+  background-size: 300% 100%;
+  background-image: linear-gradient(
+    -45deg,
+    #cfe6ff 25%,
+    #caa3d6 50%,
+    #cfe6ff 75%
+  );
+  -webkit-background-clip: text;
+  animation: text-shimmer 6s linear infinite;
+}
+
+@keyframes text-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.shadow-glow-hover {
+  box-shadow: 0 0 25px rgba(71, 61, 198, 0.5);
+}
+
+/* Enhanced shimmer effect */
+@keyframes enhanced-shimmer {
+  0% { transform: translateX(-150%) skewX(-15deg); }
+  50% { transform: translateX(-60%) skewX(-15deg); }
+  100% { transform: translateX(150%) skewX(-15deg); }
+}
+
+.shimmer-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(207, 230, 255, 0.1) 50%,
+    transparent 75%
+  );
+  animation: enhanced-shimmer 2.5s infinite;
+  opacity: 0.3;
+}
