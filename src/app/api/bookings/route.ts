@@ -62,51 +62,53 @@ export async function POST(request: Request) {
     const booking = await createBookingWithValidation(bookingData);
 
     // Trigger Make workflow with the actual booking ID
-    const makeWebhookUrl = process.env.MAKE_WEBHOOK_URL;
-    let makeResponse;
-    try {
-      if (makeWebhookUrl) {
-        const webhookPayload = {
-          bookingId: booking._id, // Use the actual Sanity document ID
-          mentorId,
-          mentorName: mentor.name,
-          mentorEmail: mentor.email,
-          date,
-          time,
-          participantName: name,
-          participantEmail: email,
-          teamMembers: Array.isArray(requestBody.teamMembers) ? requestBody.teamMembers : [],
-          topic,
-          questions: requestBody.questions || '',
-          googleMeetLink: tempMeetLink // Pass the temporary Meet link
-        };
+    // Trigger Make workflow with the actual booking ID
+// Trigger Make workflow with the actual booking ID
+const makeWebhookUrl = process.env.MAKE_WEBHOOK_URL;
+let makeResponse;
+try {
+  if (makeWebhookUrl) {
+    const webhookPayload = {
+      bookingId: booking._id, // Use the actual Sanity document ID
+      mentorId,
+      mentorName: mentor.name,
+      mentorEmail: mentor.email,
+      date,
+      time,
+      participantName: name,
+      participantEmail: email,
+      teamMembers: Array.isArray(requestBody.teamMembers) ? requestBody.teamMembers : [],
+      topic,
+      questions: requestBody.questions || '',
+      googleMeetLink: tempMeetLink // Pass the temporary Meet link
+    };
 
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json'
-        };
-        
-        // Only add Authorization header if secret exists
-        if (process.env.MAKE_WEBHOOK_SECRET) {
-          headers['Authorization'] = `Bearer ${process.env.MAKE_WEBHOOK_SECRET}`;
-        }
-        
-        makeResponse = await fetch(makeWebhookUrl, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify(webhookPayload)
-        });
-
-        if (!makeResponse.ok) {
-          console.error('Make workflow failed:', await makeResponse.text());
-        } else {
-          console.log('Make workflow triggered successfully');
-        }
-      } else {
-        console.warn('No Make webhook URL configured, skipping Make integration');
-      }
-    } catch (makeError) {
-      console.error('Error triggering Make workflow:', makeError);
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    };
+    
+    // Only add Authorization header if secret exists
+    if (process.env.MAKE_WEBHOOK_SECRET) {
+      headers['Authorization'] = `Bearer ${process.env.MAKE_WEBHOOK_SECRET}`;
     }
+    
+    makeResponse = await fetch(makeWebhookUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(webhookPayload)
+    });
+
+    const responseText = await makeResponse.text();
+    console.log('Webhook response status:', makeResponse.status);
+    console.log('Webhook response body:', responseText);
+
+    if (!makeResponse.ok) {
+      console.error('Make workflow failed:', responseText);
+    }
+  }
+} catch (makeError) {
+  console.error('Complete Make workflow error:', makeError);
+}
 
     // Prepare response with the actual Meet link
     return NextResponse.json({
