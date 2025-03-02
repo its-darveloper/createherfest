@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { getMentorById } from '@/lib/sanity/queries'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 
 export const metadata: Metadata = {
   title: 'Booking Confirmation | CreateHER Fest',
@@ -55,12 +55,21 @@ export default async function BookingConfirmationPage(props: PageProps) {
     // Continue without mentor data
   }
   
-  // Format the date and time for display
+  // Format the date and time for display - FIXED DATE PARSING
   let formattedDate = "Unknown date";
   let formattedTime = "Unknown time";
   
   try {
-    formattedDate = format(new Date(date), "EEEE, MMMM d, yyyy");
+    // Use this approach for more reliable date parsing
+    // This handles the date string consistently regardless of browser timezone
+    // First ensure we're working with just the date part (YYYY-MM-DD)
+    const datePart = date.split('T')[0];
+    
+    // Create a date object at noon UTC to avoid timezone issues
+    const dateObj = parseISO(`${datePart}T12:00:00Z`);
+    
+    // Format the date for display
+    formattedDate = format(dateObj, "EEEE, MMMM d, yyyy");
     
     // Format time slot (e.g., "10:00" -> "10:00 AM")
     const formatTimeSlot = (timeSlot: string) => {
@@ -74,6 +83,7 @@ export default async function BookingConfirmationPage(props: PageProps) {
     formattedTime = formatTimeSlot(time);
   } catch (e) {
     console.error('Error formatting date/time:', e);
+    console.error('Date string received:', date);
   }
   
   return (

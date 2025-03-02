@@ -1,4 +1,6 @@
 // src/app/api/bookings/route.ts
+
+
 import { NextResponse } from 'next/server';
 import { 
   getMentorById, 
@@ -11,7 +13,7 @@ export async function POST(request: Request) {
   try {
     const requestBody = await request.json();
     const { mentorId, date, time, name, email, topic } = requestBody;
-    
+    console.log('Received booking request with data:', JSON.stringify(requestBody, null, 2));
     // Validate required fields
     if (!mentorId || !date || !time || !name || !email || !topic) {
       return NextResponse.json(

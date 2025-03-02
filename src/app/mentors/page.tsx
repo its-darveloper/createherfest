@@ -305,19 +305,6 @@ export default function MentorsPage() {
           </Button>
         </div>
 
-        {/* Load more button with futuristic design */}
-        <div className="text-center mt-12 mb-20">
-          <Button 
-            size="lg"
-            className="bg-white/5 backdrop-blur-xl border border-white/10 text-white hover:bg-white/10 rounded-full px-8 py-6 group relative overflow-hidden"
-          >
-            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-30 animate-shimmer-slow"></span>
-            <span className="relative flex items-center">
-              Load More Mentors
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </Button>
-        </div>
       </section>
 
       {/* FAQ Section with futuristic design */}
