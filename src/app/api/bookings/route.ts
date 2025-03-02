@@ -8,27 +8,43 @@ import {
 } from "@/lib/sanity/queries";
 import { v4 as uuidv4 } from "uuid";
 
+// Set a higher timeout for API routes if supported by your hosting provider
+export const config = {
+  maxDuration: 60, // 60 seconds timeout
+};
+
 export async function POST(request: Request) {
   try {
+    // Log the raw request for debugging
+    console.log("Processing booking request");
+    
     const requestBody = await request.json();
     const { mentorId, date, time, name, email, topic } = requestBody;
+    
     console.log(
       "Received booking request with data:",
       JSON.stringify(requestBody, null, 2)
     );
+    
     // Validate required fields
     if (!mentorId || !date || !time || !name || !email || !topic) {
+      console.error("Missing required fields in booking request");
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields", details: { mentorId, date, time, name, email, topic } },
         { status: 400 }
       );
     }
 
     // Fetch mentor and validate availability
+    console.log(`Fetching mentor data for ID: ${mentorId}`);
     const mentor = await getMentorById(mentorId);
+    
     if (!mentor) {
+      console.error(`Mentor not found with ID: ${mentorId}`);
       return NextResponse.json({ error: "Mentor not found" }, { status: 404 });
     }
+
+    console.log(`Found mentor: ${mentor.name}`);
 
     // Calculate time details
     const startDate = new Date(`${date}T${time}:00`);
@@ -37,6 +53,7 @@ export async function POST(request: Request) {
 
     // Generate a temporary Meet link for fallback
     const tempMeetLink = `https://meet.google.com/${generateMeetCode()}`;
+    console.log(`Generated temporary meet link: ${tempMeetLink}`);
 
     // Prepare booking data
     const bookingData: Omit<Booking, "_id"> = {
@@ -57,11 +74,28 @@ export async function POST(request: Request) {
       googleMeetLink: tempMeetLink, // Use the generated Meet link
     };
 
+    console.log("Creating booking in Sanity with data:", JSON.stringify(bookingData, null, 2));
+    
     // Create booking first so we have the actual ID
-    const booking = await createBookingWithValidation(bookingData);
+    let booking;
+    try {
+      booking = await createBookingWithValidation(bookingData);
+      console.log(`Booking created with ID: ${booking._id}`);
+    } catch (sanityError) {
+      console.error("Error creating booking in Sanity:", sanityError);
+      return NextResponse.json(
+        { 
+          error: "Failed to create booking in database", 
+          details: sanityError instanceof Error ? sanityError.message : String(sanityError)
+        },
+        { status: 500 }
+      );
+    }
 
     // Trigger Make workflow with the actual booking ID
     const makeWebhookUrl = process.env.MAKE_WEBHOOK_URL;
+    console.log(`Make webhook URL configured: ${makeWebhookUrl ? 'Yes' : 'No'}`);
+    
     let makeResponse;
     try {
       if (makeWebhookUrl) {
@@ -82,6 +116,8 @@ export async function POST(request: Request) {
           googleMeetLink: tempMeetLink, // Pass the temporary Meet link
         };
 
+        console.log("Sending webhook payload to Make:", JSON.stringify(webhookPayload, null, 2));
+
         const headers: HeadersInit = {
           "Content-Type": "application/json",
         };
@@ -90,6 +126,9 @@ export async function POST(request: Request) {
         if (process.env.MAKE_WEBHOOK_SECRET) {
           headers["Authorization"] =
             `Bearer ${process.env.MAKE_WEBHOOK_SECRET}`;
+          console.log("Including authorization header with webhook request");
+        } else {
+          console.log("No webhook secret configured, sending unauthenticated request");
         }
 
         makeResponse = await fetch(makeWebhookUrl, {
@@ -105,12 +144,19 @@ export async function POST(request: Request) {
         if (!makeResponse.ok) {
           console.error("Make workflow failed:", responseText);
         }
+      } else {
+        console.warn("No Make webhook URL configured - skipping webhook call");
       }
     } catch (makeError) {
-      console.error("Complete Make workflow error:", makeError);
+      console.error("Make webhook error details:", makeError instanceof Error ? {
+        name: makeError.name,
+        message: makeError.message,
+        stack: makeError.stack
+      } : makeError);
     }
 
     // Prepare response with the actual Meet link
+    console.log("Sending successful booking response");
     return NextResponse.json({
       success: true,
       bookingId: booking._id,

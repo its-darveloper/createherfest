@@ -50,15 +50,29 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
   const router = useRouter();
+
+  console.log("BookingForm rendering with props:", { mentorId: mentor._id, date, time });
 
   // Perform availability check when component mounts
   useEffect(() => {
     const checkAvailability = async () => {
       setIsCheckingAvailability(true);
       try {
+        console.log(`Checking availability for mentor ${mentor._id} on ${date} at ${time}`);
         const response = await fetch(`/api/mentors/check-availability?mentorId=${mentor._id}&date=${date}&time=${time}`);
+        console.log("Availability check response status:", response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Availability check error response:", errorText);
+          setError(`Error checking availability: ${response.status} ${errorText}`);
+          return;
+        }
+
         const data = await response.json();
+        console.log("Availability check response data:", data);
         
         if (!data.available) {
           // More detailed error handling
@@ -135,11 +149,20 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     setError(null);
+    setDebugInfo(null);
   
     try {
       // Check availability one more time before submitting
+      console.log("Running final availability check before submission");
       const availabilityCheck = await fetch(`/api/mentors/check-availability?mentorId=${mentor._id}&date=${date}&time=${time}`);
+      
+      if (!availabilityCheck.ok) {
+        const errorText = await availabilityCheck.text();
+        throw new Error(`Error checking availability: ${availabilityCheck.status} ${errorText}`);
+      }
+      
       const availabilityData = await availabilityCheck.json();
+      console.log("Final availability check result:", availabilityData);
       
       if (!availabilityData.available) {
         setError("This time slot is no longer available. Please select another time.");
@@ -147,34 +170,71 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
         return;
       }
   
+      // Prepare payload for API call
+      const payload = {
+        mentorId: mentor._id,
+        date,
+        time,
+        name: data.name,
+        email: data.email,
+        teamMembers: data.teamMembers || [],
+        topic: data.topic,
+        questions: data.questions || '',
+      };
+      
+      console.log("Submitting booking with payload:", JSON.stringify(payload, null, 2));
+      
       // Submit booking data to your API (which will trigger Make webhook)
       const response = await fetch("/api/bookings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          mentorId: mentor._id,
-          date,
-          time,
-          name: data.name,
-          email: data.email,
-          teamMembers: data.teamMembers || [],
-          topic: data.topic,
-          questions: data.questions || '',
-        }),
+        body: JSON.stringify(payload),
       });
-  
+      
+      console.log("Booking API response status:", response.status);
+      
+      // Get response as text first to avoid JSON parsing errors
+      const responseText = await response.text();
+      console.log("Booking API raw response:", responseText);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to book session");
+        // Try to parse the error as JSON
+        try {
+          const errorData = JSON.parse(responseText);
+          throw new Error(errorData.error || `Server error: ${response.status}`);
+        } catch (jsonError) {
+          // If parsing fails, use the raw text
+          throw new Error(`Server error (${response.status}): ${responseText || "No response details"}`);
+        }
+      }
+      
+      // Parse successful response
+      let result;
+      try {
+        result = JSON.parse(responseText);
+        console.log("Parsed successful response:", result);
+      } catch (parseError) {
+        console.error("Error parsing success response:", parseError);
+        throw new Error("Received invalid response from server");
       }
   
-      const result = await response.json();
-  
       // Redirect to confirmation page
+      console.log("Redirecting to:", result.redirectUrl);
       router.push(result.redirectUrl || `/mentors/booking-confirmation?mentor=${mentor._id}&date=${date}&time=${time}`);
     } catch (err) {
+      console.error("Complete booking error:", err);
+      
+      // Format detailed error info for debugging
+      let errorDetails = "";
+      if (err instanceof Error) {
+        errorDetails = `${err.name}: ${err.message}\n${err.stack || ""}`;
+      } else {
+        errorDetails = String(err);
+      }
+      
+      setDebugInfo(errorDetails);
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setIsSubmitting(false);
     }
@@ -213,6 +273,15 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
+        )}
+        
+        {debugInfo && (
+          <div className="mb-6 p-4 border border-yellow-500/50 bg-yellow-900/20 text-yellow-200 rounded-md overflow-auto">
+            <details>
+              <summary className="cursor-pointer font-medium">Technical Error Details (for debugging)</summary>
+              <pre className="mt-2 text-xs whitespace-pre-wrap">{debugInfo}</pre>
+            </details>
+          </div>
         )}
       </div>
 
@@ -396,7 +465,12 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
               className="bg-[#473dc6] hover:bg-[#473dc6]/80 text-white"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Booking..." : "Confirm Booking"}
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
+                  Booking...
+                </>
+              ) : "Confirm Booking"}
             </Button>
           </div>
         </form>

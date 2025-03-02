@@ -6,8 +6,8 @@ import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 import type { FAQ, Speaker, Workshop, Partner, Mentor } from '@/types/sanity'
 
 export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '',
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'speakers',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   apiVersion: '2024-02-07',
   useCdn: true
 })
