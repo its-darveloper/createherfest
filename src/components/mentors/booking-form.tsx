@@ -57,7 +57,7 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
     const checkAvailability = async () => {
       setIsCheckingAvailability(true);
       try {
-        const response = await fetch(`/api/mentors/check-availability?mentorId=${mentor._id}&date=${date}&time=${time}`);
+        const response = await fetch(`/api/mentors/check-availability?mentorId=<span class="math-inline">\{mentor\.\_id\}&date\=</span>{date}&time=${time}`);
         const data = await response.json();
         
         if (!data.available) {
@@ -101,7 +101,7 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
     const hour = parseInt(hours, 10);
     const period = hour >= 12 ? 'PM' : 'AM';
     const formattedHour = hour % 12 || 12;
-    return `${formattedHour}:${minutes} ${period}`;
+    return `<span class="math-inline">\{formattedHour\}\:</span>{minutes} ${period}`;
   }
   
   const formattedTime = formatTimeSlot(time);
@@ -138,7 +138,7 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
   
     try {
       // Check availability one more time before submitting
-      const availabilityCheck = await fetch(`/api/mentors/check-availability?mentorId=${mentor._id}&date=${date}&time=${time}`);
+      const availabilityCheck = await fetch(`/api/mentors/check-availability?mentorId=<span class="math-inline">\{mentor\.\_id\}&date\=</span>{date}&time=${time}`);
       const availabilityData = await availabilityCheck.json();
       
       if (!availabilityData.available) {
@@ -165,17 +165,21 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
         }),
       });
   
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to book session");
-      }
-  
       const result = await response.json();
   
-      // Redirect to confirmation page
-      router.push(result.redirectUrl || `/mentors/booking-confirmation?mentor=${mentor._id}&date=${date}&time=${time}`);
+      if (!response.ok) {
+        // Log server-side error details
+        console.error('Booking API error:', result);
+        setError(result.error || 'Booking failed');
+        setIsSubmitting(false);
+        return;
+      }
+  
+      // Successful booking logic
+      router.push(result.redirectUrl || `/mentors/booking-confirmation?mentor=<span class="math-inline">\{mentor\.\_id\}&date\=</span>{date}&time=${time}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      console.error('Client-side booking error:', err);
+      setError('An unexpected error occurred');
       setIsSubmitting(false);
     }
   };
@@ -199,7 +203,7 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="flex items-center text-[#f1eae7]/80">
-            <CalendarDays className="h-5 w-5 mr-2 text-[#caa3d6]" />
+          <CalendarDays className="h-5 w-5 mr-2 text-[#caa3d6]" />
             <span>{formattedDate}</span>
           </div>
           <div className="flex items-center text-[#f1eae7]/80">
@@ -393,7 +397,7 @@ export function BookingForm({ mentor, date, time }: BookingFormProps) {
             
             <Button 
               type="submit" 
-              className="bg-[#473dc6] hover:bg-[#473dc6]/80 text-white"
+              className="bg-[#473dc6] hover:bg-[#473dc6] text-white py-4 shadow-md hover:shadow-lg transition-all duration-300 rounded-xl"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Booking..." : "Confirm Booking"}
