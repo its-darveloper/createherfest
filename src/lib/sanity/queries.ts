@@ -3,10 +3,10 @@ import { createClient } from 'next-sanity';
 
 // Configure your Sanity client with enhanced options
 const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || '',
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET || 'speakers',
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   apiVersion: '2023-05-03', // Use the API version you need
-  useCdn: process.env.NODE_ENV === 'production', // Use CDN in production
+  useCdn: true, // Use CDN in production
   token: process.env.SANITY_API_TOKEN, // Make sure this is present
   
   // REMOVE this property causing the warning
