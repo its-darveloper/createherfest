@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Inter, Urbanist } from "next/font/google";
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
+// import { CartProvider } from '@/hooks/useCart';
+// import { AuthProvider } from '@/hooks/useAuth';
 import "./globals.css";
 
 const inter = Inter({
@@ -45,9 +47,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${urbanist.variable}`}>
       <body className={`${inter.className} antialiased`}>
+
         <Navigation />
         {children}
         <Footer />
+
       </body>
     </html>
   );
