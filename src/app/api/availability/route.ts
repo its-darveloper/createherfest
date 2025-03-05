@@ -1,33 +1,40 @@
 // app/api/availability/route.ts
-
 import { NextResponse } from 'next/server';
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_UD_API_URL || 'https://api.ud-sandbox.com/partner/v3';
+const API_KEY = process.env.UD_API_KEY;
 
 export async function POST(request: Request) {
+  const body = await request.json();
+  const domains = body.domains;
+
+  if (!domains || !domains.length) {
+    return NextResponse.json({ items: [] });
+  }
+
   try {
-    const body = await request.json();
-    const { domains } = body;
-    
-    if (!domains || !Array.isArray(domains)) {
-      return NextResponse.json({ 
-        items: [], 
-        error: { message: 'Invalid domains array' } 
-      }, { status: 400 });
-    }
-    
-    // Here we would normally call the Unstoppable Domains API
-    // For development, we'll simulate all domains being available
-    const items = domains.map(domain => ({
-      name: domain,
-      availability: { status: 'AVAILABLE' }
-    }));
-    
-    return NextResponse.json({ items });
-    
-  } catch (error) {
-    console.error('Error checking domain availability:', error);
+    const response = await axios.post(
+      `${API_BASE_URL}/domain/details`,
+      { domains },
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    console.log('Domain availability response:', response.data);
+    return NextResponse.json(response.data);
+  } catch (error: any) {
+    console.error('Error checking domain availability:', error.response?.data || error.message);
     return NextResponse.json({ 
-      items: [], 
-      error: { message: 'Failed to check domain availability', details: error } 
+      items: [],
+      error: { 
+        message: 'Failed to check domain availability', 
+        details: error.response?.data || error.message 
+      } 
     }, { status: 500 });
   }
 }

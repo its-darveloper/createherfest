@@ -29,8 +29,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Load cart from localStorage on initial render
   useEffect(() => {
     const storedCart = localStorage.getItem('domain_cart');
+    console.log('Loaded from localStorage:', storedCart);
     if (storedCart) {
-      setItems(JSON.parse(storedCart));
+      try {
+        const parsedCart = JSON.parse(storedCart);
+        console.log('Parsed cart:', parsedCart);
+        setItems(parsedCart);
+      } catch (error) {
+        console.error('Error parsing cart data:', error);
+        localStorage.removeItem('domain_cart');
+      }
     }
   }, []);
   
@@ -40,8 +48,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [items]);
   
   const addItem = (item: DomainSuggestion) => {
+    console.log('Adding item to cart:', item);
     if (!items.some(cartItem => cartItem.suggestion.name === item.name)) {
-      setItems([...items, { suggestion: item, operationId: '', available: true }]);
+      const newItems = [...items, { suggestion: item, operationId: '', available: true }];
+      console.log('New cart state:', newItems);
+      setItems(newItems);
+    } else {
+      console.log('Item already exists in cart');
     }
   };
   

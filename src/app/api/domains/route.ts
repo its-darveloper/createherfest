@@ -1,48 +1,39 @@
 // app/api/domains/route.ts
-
 import { NextResponse } from 'next/server';
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_UD_API_URL || 'https://api.ud-sandbox.com/partner/v3';
+const API_KEY = process.env.UD_API_KEY;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('query');
-  
+
   if (!query) {
-    return NextResponse.json({ 
-      items: [], 
-      error: { message: 'Query parameter is required' } 
-    }, { status: 400 });
+    return NextResponse.json({ items: [] });
   }
-  
+
   try {
-    // Here we would normally call the Unstoppable Domains API
-    // For development, we'll create mock data
-    const tld = '.she';
-    const suggestions = [];
-    
-    // Main domain
-    suggestions.push({
-      name: `${query}${tld}`,
-      availability: { status: 'AVAILABLE' },
-      price: { listPrice: { usdCents: 2000 } }
-    });
-    
-    // Generate additional suggestions
-    const suffixes = ['creative', 'digital', 'tech', 'web3'];
-    for (const suffix of suffixes) {
-      suggestions.push({
-        name: `${query}${suffix}${tld}`,
-        availability: { status: 'AVAILABLE' },
-        price: { listPrice: { usdCents: 2000 } }
-      });
-    }
-    
-    return NextResponse.json({ items: suggestions });
-    
-  } catch (error) {
-    console.error('Error fetching domain suggestions:', error);
+    const response = await axios.get(
+      `${API_BASE_URL}/suggestions/domains?query=${encodeURIComponent(query)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    console.log('Domain suggestions response:', response.data);
+    return NextResponse.json(response.data);
+  } catch (error: any) {
+    console.error('Error fetching domain suggestions:', error.response?.data || error.message);
     return NextResponse.json({ 
-      items: [], 
-      error: { message: 'Failed to fetch domain suggestions', details: error } 
+      items: [],
+      error: { 
+        message: 'Failed to fetch domain suggestions', 
+        details: error.response?.data || error.message 
+      } 
     }, { status: 500 });
   }
 }

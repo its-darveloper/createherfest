@@ -1,9 +1,28 @@
 // types/cart.d.ts
+export interface DomainSuggestion {
+  name: string;
+  availability: {
+    status: string;
+  };
+  price: {
+    listPrice: {
+      usdCents: number;
+    };
+  };
+}
 
-import { DomainSuggestion } from './suggestions';
-
-export default interface CartItem {
+export interface CartItem {
   suggestion: DomainSuggestion;
   operationId: string;
   available: boolean;
+}
+
+export interface CartContextType {
+  items: CartItem[];
+  addItem: (item: DomainSuggestion) => void;
+  removeItem: (domainName: string) => void;
+  updateItemOperation: (domainName: string, operationId: string) => void;
+  updateItemAvailability: (domainName: string, available: boolean) => void;
+  clearCart: () => void;
+  total: number;
 }
