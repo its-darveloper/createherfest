@@ -3,20 +3,23 @@ import type { Metadata } from "next";
 import { Inter, Urbanist } from "next/font/google";
 import { Navigation } from "@/components/layout/navigation";
 import { Footer } from "@/components/layout/footer";
-// import { CartProvider } from '@/hooks/useCart';
-// import { AuthProvider } from '@/hooks/useAuth';
+import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
+import Providers from "./providers";
+import AuthDebug from '@/components/debug/AuthDebug';
+
 import "./globals.css";
 
 const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500'],  // Light, Regular, Medium
+  weight: ['300', '400', '500'],
   variable: '--font-inter',
   display: 'swap',
 });
 
 const urbanist = Urbanist({
   subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],  // Medium, SemiBold, Bold, ExtraBold
+  weight: ['500', '600', '700', '800'],
   variable: '--font-urbanist',
   display: 'swap',
 });
@@ -31,7 +34,7 @@ export const metadata: Metadata = {
     siteName: 'CreateHER Fest',
     images: [
       {
-        url: 'https://createherfest.notion.site/image/attachment%3A1ec11d90-0dd2-4137-ba6b-32b0ddd0d949%3ACreateHER_Fest_Email_Header_(2).png?table=block&id=1a21ac87-fe57-802a-b6a5-ea59b263ebfe&spaceId=0c5e5dd0-9df7-4a03-acd6-a76b92f612c6&width=1420&userId=&cache=v2', // Add your OG image
+        url: 'https://createherfest.notion.site/image/attachment%3A1ec11d90-0dd2-4137-ba6b-32b0ddd0d949%3ACreateHER_Fest_Email_Header_(2).png?table=block&id=1a21ac87-fe57-802a-b6a5-ea59b263ebfe&spaceId=0c5e5dd0-9df7-4a03-acd6-a76b92f612c6&width=1420&userId=&cache=v2',
         width: 1200,
         height: 630,
       },
@@ -47,11 +50,16 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${urbanist.variable}`}>
       <body className={`${inter.className} antialiased`}>
-
-        <Navigation />
-        {children}
-        <Footer />
-
+        <Providers>
+          <AuthProvider>
+            <CartProvider>
+              <Navigation />
+              {children}
+              <Footer />
+              {process.env.NODE_ENV === 'development' && <AuthDebug />}
+            </CartProvider>
+          </AuthProvider>
+        </Providers>
       </body>
     </html>
   );
