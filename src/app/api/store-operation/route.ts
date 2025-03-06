@@ -1,4 +1,4 @@
-// app/api/store-operation/route.ts
+// src/app/api/store-operation/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
@@ -13,13 +13,15 @@ if (!fs.existsSync(OPERATIONS_FILE)) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { domain, operationId, status, walletAddress, needsTransfer } = await request.json();
+    const { domain, operationId, status, walletAddress, needsTransfer, isReservation, isReturn, refundStatus } = await request.json();
     
     console.log(`Storing operation for domain ${domain}:`, {
       operationId,
       status,
       walletAddress: walletAddress ? `${walletAddress.substring(0, 8)}...` : undefined,
-      needsTransfer
+      needsTransfer,
+      isReservation,
+      isReturn
     });
     
     if (!domain || !operationId) {
@@ -45,7 +47,10 @@ export async function POST(request: NextRequest) {
         status: status || operations[existingIndex].status || 'PENDING',
         lastUpdated: new Date().toISOString(),
         walletAddress: walletAddress || operations[existingIndex].walletAddress,
-        needsTransfer: needsTransfer !== undefined ? needsTransfer : operations[existingIndex].needsTransfer
+        needsTransfer: needsTransfer !== undefined ? needsTransfer : operations[existingIndex].needsTransfer,
+        isReservation: isReservation !== undefined ? isReservation : operations[existingIndex].isReservation,
+        isReturn: isReturn !== undefined ? isReturn : operations[existingIndex].isReturn,
+        refundStatus: refundStatus || operations[existingIndex].refundStatus
       };
     } else {
       // Add new operation
@@ -56,7 +61,10 @@ export async function POST(request: NextRequest) {
         status: status || 'PENDING',
         lastUpdated: new Date().toISOString(),
         walletAddress,
-        needsTransfer: needsTransfer !== undefined ? needsTransfer : true
+        needsTransfer: needsTransfer !== undefined ? needsTransfer : true,
+        isReservation: isReservation || false,
+        isReturn: isReturn || false,
+        refundStatus: refundStatus
       });
     }
     

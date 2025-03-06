@@ -1,4 +1,4 @@
-// app/api/create-payment-intent/route.ts
+// src/app/api/create-payment-intent/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
@@ -8,13 +8,26 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
-    const { amount, domainNames } = await request.json();
+    const { amount, domainNames, checkoutStartTime } = await request.json();
     
     if (!amount) {
       return NextResponse.json(
         { error: 'Amount is required' },
         { status: 400 }
       );
+    }
+    
+    // Validate checkout hasn't expired
+    if (checkoutStartTime) {
+      const now = Date.now();
+      const checkoutExpirationTime = checkoutStartTime + (2 * 60 * 1000); // 2 minutes
+      
+      if (now > checkoutExpirationTime) {
+        return NextResponse.json(
+          { error: 'Checkout session has expired' },
+          { status: 400 }
+        );
+      }
     }
     
     console.log('Creating payment intent for amount:', amount, 'domains:', domainNames);
@@ -25,6 +38,7 @@ export async function POST(request: NextRequest) {
       currency: 'usd',
       metadata: {
         domains: JSON.stringify(domainNames || []), // Store domain names in metadata
+        checkoutStartTime: checkoutStartTime ? checkoutStartTime.toString() : undefined
       },
       automatic_payment_methods: {
         enabled: true,

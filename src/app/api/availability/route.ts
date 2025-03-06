@@ -14,27 +14,57 @@ export async function POST(request: Request) {
   }
 
   try {
-    const response = await axios.post(
-      `${API_BASE_URL}/domain/details`,
-      { domains },
-      {
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
+    console.log('Checking availability for domains:', domains);
+    
+    // Try individual domain lookups instead of batch
+    const results = [];
+    
+    for (const domain of domains) {
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/domains/${domain}`,
+          {
+            headers: {
+              Authorization: `Bearer ${API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        results.push({
+          name: domain,
+          availability: response.data.availability || { status: 'UNKNOWN' }
+        });
+      } catch (domainError) {
+        console.log(`Error checking domain ${domain}:`, domainError.message);
+        
+        // If domain not found, assume it's available
+        if (domainError.response?.status === 404) {
+          results.push({
+            name: domain,
+            availability: { status: 'AVAILABLE' }
+          });
+        } else {
+          results.push({
+            name: domain,
+            availability: { status: 'UNKNOWN' }
+          });
         }
       }
-    );
+    }
 
-    console.log('Domain availability response:', response.data);
-    return NextResponse.json(response.data);
+    return NextResponse.json({ items: results });
   } catch (error: any) {
     console.error('Error checking domain availability:', error.response?.data || error.message);
     return NextResponse.json({ 
-      items: [],
+      items: domains.map(domain => ({
+        name: domain,
+        availability: { status: 'UNKNOWN' }
+      })),
       error: { 
         message: 'Failed to check domain availability', 
         details: error.response?.data || error.message 
       } 
-    }, { status: 500 });
+    });
   }
 }

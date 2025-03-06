@@ -1,4 +1,4 @@
-// app/api/checkout/route.ts
+// src/app/api/checkout/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
@@ -9,7 +9,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { domains, walletAddress, payment } = body;
+    const { domains, walletAddress, payment, checkoutStartTime } = body;
 
     console.log(`Processing checkout for domains:`, domains.map((d: any) => d.name));
     console.log(`Wallet Address:`, walletAddress);
@@ -20,9 +20,23 @@ export async function POST(request: NextRequest) {
         error: { message: 'Domains and wallet address are required' } 
       }, { status: 400 });
     }
+    
+    // Validate checkout hasn't expired
+    if (checkoutStartTime) {
+      const now = Date.now();
+      const checkoutExpirationTime = checkoutStartTime + (2 * 60 * 1000); // 2 minutes
+      
+      if (now > checkoutExpirationTime) {
+        return NextResponse.json({ 
+          error: { message: 'Checkout session has expired' } 
+        }, { status: 400 });
+      }
+    }
 
     // Process domains - first step is to register all domains
     const results = [];
+    let allSuccessful = true;
+    
     for (const domain of domains) {
       try {
         console.log(`Processing domain: ${domain.name}`);
@@ -150,6 +164,8 @@ export async function POST(request: NextRequest) {
                   message: `Failed to transfer domain ${domain.name}`,
                   error: transferError.response?.data || transferError.message
                 });
+                
+                allSuccessful = false;
               }
             } else {
               // Operation still pending
@@ -167,10 +183,15 @@ export async function POST(request: NextRequest) {
             
             // Assume operation ID is invalid, attempt to register domain
             console.log(`Will attempt to register domain ${domain.name}...`);
+            
+            // Continue with domain registration below
           }
-        } else {
+        }
+        
+        // Register domain if no valid operation ID or operation check failed
+        if (!domain.operationId || !results.some(r => r.domain === domain.name)) {
           // No operation ID, try to register domain
-          console.log(`No operation ID for ${domain.name}, checking domain status...`);
+          console.log(`Registering domain ${domain.name}...`);
           
           try {
             // Check if domain already exists
@@ -272,6 +293,8 @@ export async function POST(request: NextRequest) {
                 message: `Domain ${domain.name} is already owned by another user`,
                 error: { code: 'DOMAIN_UNAVAILABLE' }
               });
+              
+              allSuccessful = false;
             }
           } catch (domainError: any) {
             if (domainError.response?.status === 404) {
@@ -320,6 +343,8 @@ export async function POST(request: NextRequest) {
                 message: `Error checking domain ${domain.name}`,
                 error: domainError.response?.data || domainError.message
               });
+              
+              allSuccessful = false;
             }
           }
         }
@@ -334,12 +359,12 @@ export async function POST(request: NextRequest) {
           success: false,
           error: domainError.response?.data || domainError.message
         });
+        
+        allSuccessful = false;
       }
     }
 
     // Check if all domains were processed successfully
-    const allSuccessful = results.every((result: any) => result.success);
-    
     console.log(`Checkout process completed. All successful: ${allSuccessful}`);
     console.log(`Results:`, results);
 
@@ -355,10 +380,20 @@ export async function POST(request: NextRequest) {
     console.error('Error in checkout process:', error);
     console.error('Stack trace:', error.stack);
     
+    // Provide better error messages for common failures
+    let errorMessage = 'Failed to process checkout';
+    if (error.message?.includes('ECONNREFUSED')) {
+      errorMessage = 'Connection to our servers failed. Please try again or contact support.';
+    } else if (error.response?.status === 404) {
+      errorMessage = 'One or more domains are no longer available.';
+    } else if (error.response?.data?.error?.message) {
+      errorMessage = error.response.data.error.message;
+    }
+    
     return NextResponse.json({ 
       success: false,
       error: { 
-        message: 'Failed to process checkout', 
+        message: errorMessage, 
         details: error.response?.data || error.message 
       } 
     }, { status: 500 });
