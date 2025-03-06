@@ -18,7 +18,8 @@ import {
   PieChart,
   Award,
   Sparkles,
-  Heart
+  Heart,
+  ShoppingCart
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
@@ -165,7 +166,8 @@ export default function DomainClaimPage() {
               
               <div>
                 <TabsContent value="search" className="mt-0">
-                  <DomainSearch onAddToCart={() => items.length === 1 && setActiveTab('cart')} />
+                  {/* Removed auto-redirect to cart */}
+                  <DomainSearch onAddToCart={() => {}} />
                 </TabsContent>
                 
                 <TabsContent value="cart" className="mt-0">
@@ -178,6 +180,19 @@ export default function DomainClaimPage() {
               </div>
             </Tabs>
           </div>
+          
+          {/* Floating cart button visible when items in cart but viewing search tab */}
+          {items.length > 0 && activeTab === 'search' && (
+            <div className="fixed bottom-8 right-8 z-50">
+              <Button
+                onClick={() => setActiveTab('cart')}
+                className="bg-[#473dc6] hover:bg-[#5c51e6] text-white rounded-full p-4 shadow-lg flex items-center"
+              >
+                <ShoppingCart className="h-6 w-6 mr-2" />
+                View Cart ({items.length})
+              </Button>
+            </div>
+          )}
           
           {/* Benefits Section */}
           {activeTab === 'search' && (

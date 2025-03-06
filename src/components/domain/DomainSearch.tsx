@@ -1,5 +1,3 @@
-// components/domain/DomainSearch.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -10,13 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Loader2, Plus, X, Search, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 
-export default function DomainSearch({ onAddToCart }: { onAddToCart: () => void }) {
+export default function DomainSearch({ onAddToCart }: { onAddToCart?: () => void }) {
   const [query, setQuery] = useState('');
   const [submittedQuery, setSubmittedQuery] = useState('');
   const [isInfoVisible, setIsInfoVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const { items, addItem, removeItem } = useCart();
+  const { toast } = useToast();
   
   const domainsPerPage = 5;
   
@@ -69,7 +69,15 @@ export default function DomainSearch({ onAddToCart }: { onAddToCart: () => void 
   const handleAddToCart = (domain: DomainSuggestion) => {
     console.log('Add to cart clicked for domain:', domain);
     addItem(domain);
-    // If you have an onAddToCart prop, call it here
+    
+    // Show a toast notification instead of redirecting
+    toast({
+      title: "Added to cart",
+      description: `${domain.name} has been added to your cart`,
+      duration: 3000
+    });
+    
+    // Only call onAddToCart callback if provided
     if (typeof onAddToCart === 'function') {
       onAddToCart();
     }

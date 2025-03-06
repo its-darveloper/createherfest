@@ -1,4 +1,4 @@
-// components/domain/StripeCheckoutForm.tsx
+// src/components/domain/StripeCheckoutForm.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -90,12 +90,14 @@ export default function StripeCheckoutForm({
   amount, 
   onSuccess, 
   onError,
-  domainNames 
+  domainNames,
+  checkoutStartTime
 }: { 
   amount: number; 
   onSuccess: () => void; 
   onError: (error: string) => void;
   domainNames: string[];
+  checkoutStartTime?: number;
 }) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
@@ -113,14 +115,20 @@ export default function StripeCheckoutForm({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             amount, 
-            domainNames
+            domainNames,
+            checkoutStartTime
           }),
         });
         
         const data = await response.json();
         
         if (data.error) {
-          onError(data.error);
+          // If checkout expired, show specific error
+          if (data.error.includes('expired')) {
+            onError('Your checkout session has expired. Please return to search and try again.');
+          } else {
+            onError(data.error);
+          }
           return;
         }
         
@@ -133,7 +141,7 @@ export default function StripeCheckoutForm({
     };
     
     createPaymentIntent();
-  }, [amount, domainNames, onError, clientSecret, isInitializing]);
+  }, [amount, domainNames, onError, clientSecret, isInitializing, checkoutStartTime]);
 
   return (
     <div>

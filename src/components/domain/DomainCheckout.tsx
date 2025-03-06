@@ -1,4 +1,4 @@
-// components/domain/DomainCheckout.tsx
+// src/components/domain/DomainCheckout.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -19,6 +19,7 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
   const router = useRouter();
   
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isReserving, setIsReserving] = useState(true);  // Track domain reservation
   const [isSuccess, setIsSuccess] = useState(false);
   const [partialSuccess, setPartialSuccess] = useState(false);
   const [successfulDomains, setSuccessfulDomains] = useState<string[]>([]);
@@ -26,7 +27,8 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
   const [timeLeft, setTimeLeft] = useState(120); // 2 minute countdown
   const [error, setError] = useState('');
   const [showWalletModal, setShowWalletModal] = useState(false);
-  
+  const [checkoutStartTime] = useState(Date.now());  // Track when checkout started
+
   // Format price from cents to dollars
   const formatPrice = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
@@ -39,6 +41,51 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
     }
   }, [user, showWalletModal]);
   
+  // Reserve domains when entering checkout
+  useEffect(() => {
+    const reserveDomains = async () => {
+      if (!user?.wallet_address || items.length === 0) return;
+      
+      setIsReserving(true);
+      try {
+        // Call domain reservation API to reserve domains for this user
+        const response = await axios.post('/api/reserve-domains', {
+          domains: items.map(item => item.suggestion.name),
+          walletAddress: user.wallet_address
+        });
+        
+        console.log('Domain reservation response:', response.data);
+        
+        if (response.data.success) {
+          // Update operation IDs for each domain
+          response.data.results.forEach(result => {
+            if (result.success && result.operation?.id) {
+              updateItemOperation(result.domain, result.operation.id);
+            }
+          });
+        } else {
+          // Check if any domains are no longer available
+          const unavailableDomains = response.data.results
+            .filter(result => !result.success && result.error?.code === 'DOMAIN_UNAVAILABLE')
+            .map(result => result.domain);
+            
+          if (unavailableDomains.length > 0) {
+            setError(`Some domains are no longer available: ${unavailableDomains.join(', ')}`);
+          } else {
+            setError('Failed to reserve domains. Please try again.');
+          }
+        }
+      } catch (error: any) {
+        console.error('Error reserving domains:', error);
+        setError('Failed to reserve domains. Please try again later.');
+      } finally {
+        setIsReserving(false);
+      }
+    };
+    
+    reserveDomains();
+  }, [items, user, updateItemOperation]);
+  
   // Countdown timer
   useEffect(() => {
     if (timeLeft > 0 && !isSuccess) {
@@ -46,11 +93,29 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
       return () => clearTimeout(timer);
     } else if (timeLeft === 0 && !isSuccess) {
       setError("Your checkout session has expired. Please try again.");
+      handleExpiredCheckout();
       setTimeout(() => {
         router.push('/claim');
       }, 3000);
     }
   }, [timeLeft, isSuccess, router]);
+  
+  // Handle expired checkout by returning reserved domains
+  const handleExpiredCheckout = async () => {
+    try {
+      // Call API to return all reserved domains
+      const response = await axios.post('/api/handle-expired-checkout', {
+        domains: items.map(item => ({ 
+          name: item.suggestion.name,
+          operationId: item.operationId
+        }))
+      });
+      
+      console.log('Expired checkout handled:', response.data);
+    } catch (error) {
+      console.error('Error handling expired checkout:', error);
+    }
+  };
   
   // Format the countdown timer
   const formatTime = (seconds: number) => {
@@ -70,9 +135,6 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
     setIsProcessing(true);
     
     try {
-      // Track operations in local storage for status page
-      const storedOperations = JSON.parse(localStorage.getItem('DOMAIN_OPERATIONS') || '[]');
-      
       console.log('Starting checkout process with wallet:', user?.wallet_address);
       
       // Process domain registration and transfer
@@ -82,7 +144,8 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
           operationId: item.operationId 
         })),
         walletAddress: user?.wallet_address,
-        payment: true
+        payment: true,
+        checkoutStartTime: checkoutStartTime
       });
       
       console.log('Checkout response received:', response.data);
@@ -100,7 +163,7 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
             needsTransfer: result.needsTransfer
           }));
         
-        // Instead of just storing in localStorage, ensure data is sent to the server API
+        // Ensure data is sent to the server API
         newOperations.forEach(async (operation) => {
           try {
             await axios.post('/api/store-operation', {
@@ -150,9 +213,20 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
         setError(response.data.error?.message || "Failed to process your domains");
       }
     } catch (error: any) {
+      // Better error handling
+      let errorMessage = "Failed to process your domains. Please contact support.";
+      
+      if (error.message?.includes('ECONNREFUSED')) {
+        errorMessage = 'Connection to our servers failed. Please try again or contact support.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'The domain you selected is no longer available.';
+      } else if (error.response?.data?.error?.message) {
+        errorMessage = error.response.data.error.message;
+      }
+      
       console.error('Domain processing error:', error);
       console.error('Error details:', error.response?.data);
-      setError(error.response?.data?.error?.message || "Failed to process your domains. Please contact support.");
+      setError(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -172,7 +246,12 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
       <div className="shimmer-container bg-[#150e60] rounded-xl p-6 border border-[#473dc6]/40 shadow-glow">
         <h2 className="font-urbanist text-subtitle-md text-white mb-6">Complete Your Purchase</h2>
         
-        {isSuccess ? (
+        {isReserving ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-10 w-10 animate-spin text-[#caa3d6] mb-4" />
+            <p className="text-white/80 font-inter">Reserving your domains...</p>
+          </div>
+        ) : isSuccess ? (
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -321,6 +400,7 @@ export default function DomainCheckout({ onSuccess }: { onSuccess: () => void })
                     onSuccess={handlePaymentSuccess} 
                     onError={handlePaymentError}
                     domainNames={items.map(item => item.suggestion.name)}
+                    checkoutStartTime={checkoutStartTime}
                   />
                 </div>
               </div>

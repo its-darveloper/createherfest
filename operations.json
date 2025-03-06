@@ -39,8 +39,8 @@
     "domain": "coindarveloper.unstoppable",
     "name": "coindarveloper.unstoppable",
     "operationId": "op-bc090659-0e93-485f-bf97-3375bf9f6288",
-    "status": "PROCESSING",
-    "lastUpdated": "2025-03-05T22:22:13.000Z",
+    "status": "COMPLETED",
+    "lastUpdated": "2025-03-05T22:24:12.413Z",
     "walletAddress": "0x4e3be73b1a0c2b6689b112fe6330a7aee8bbc4e7",
     "needsTransfer": true
   }
