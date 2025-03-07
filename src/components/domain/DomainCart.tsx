@@ -1,7 +1,7 @@
 // components/domain/DomainCart.tsx
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2, ShoppingCart, CreditCard, AlertCircle, AlertTriangle, RefreshCw } from 'lucide-react';
@@ -21,50 +21,28 @@ export default function DomainCart({ onProceedToCheckout }: { onProceedToCheckou
   const [error, setError] = useState<string | null>(null);
   const [reservationError, setReservationError] = useState<string | null>(null);
   
-  // Track if component is mounted
-  const isMounted = useRef(true);
-  
-  // Reference to store the check interval
-  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Store the last check time in a ref to avoid re-renders
-  const lastCheckTimeRef = useRef<number>(0);
+  // Disable automatic availability checking - we'll only check on demand
+  const preventChecksRef = useRef(true);
   
   // Format price from cents to dollars
   const formatPrice = (cents: number) => {
     return `$${(cents / 100).toFixed(2)}`;
   };
   
-  // Check domain availability function
-  const checkAvailability = useCallback(async (force = false) => {
-    // Skip if not mounted
-    if (!isMounted.current) return;
-    
-    // Skip if no items
+  // Manual check availability function - only called when the "Retry Check" button is clicked
+  // or when proceeding to checkout
+  const checkAvailability = async () => {
     if (items.length === 0) return;
     
-    // Skip if already checking
-    if (isChecking) return;
-    
-    // Add debouncing - skip if checked recently unless force=true
-    const now = Date.now();
-    if (!force && (now - lastCheckTimeRef.current < 10000)) {
-      console.log('Skipping availability check - checked recently');
-      return;
-    }
-    
-    // Update last check time
-    lastCheckTimeRef.current = now;
-    
     setIsChecking(true);
+    setError(null);
+    
     try {
-      console.log('Checking availability for domains:', items.map(item => item.suggestion.name));
+      console.log('Manually checking availability for domains:', items.map(item => item.suggestion.name));
       const response = await axios.post('/api/availability', {
         domains: items.map(item => item.suggestion.name),
-        _cache: now // Add cache busting parameter
+        timestamp: Date.now() // Cache-busting parameter
       });
-      
-      if (!isMounted.current) return;
       
       console.log('Availability response:', response.data);
       
@@ -77,6 +55,8 @@ export default function DomainCart({ onProceedToCheckout }: { onProceedToCheckou
           ])
         );
         
+        let unavailableFound = false;
+        
         // For each cart item, update availability
         items.forEach(item => {
           const isAvailable = availabilityMap.get(item.suggestion.name);
@@ -85,96 +65,35 @@ export default function DomainCart({ onProceedToCheckout }: { onProceedToCheckou
             updateItemAvailability(item.suggestion.name, Boolean(isAvailable));
             
             if (!isAvailable) {
-              toast({
-                title: "Domain no longer available",
-                description: `${item.suggestion.name} is no longer available and will be removed from your cart`,
-                variant: "destructive",
-                duration: 5000
-              });
-              
-              // Remove unavailable item after a short delay to allow toast to be seen
-              setTimeout(() => {
-                if (isMounted.current) {
-                  removeItem(item.suggestion.name);
-                }
-              }, 2000);
+              unavailableFound = true;
             }
           }
         });
+        
+        // Only show toast for unavailable domains if this was a manual check
+        if (unavailableFound) {
+          toast({
+            title: "Domain availability updated",
+            description: "Some domains in your cart are no longer available.",
+            variant: "destructive", // Using a valid variant
+            duration: 5000
+          });
+        }
       } else if (response.data.error) {
         console.error('Availability check error:', response.data.error);
-        // Only show toast on first error, not on every check
-        if (!error) {
-          setError('There was a problem checking domain availability. Some domains might not be available.');
-        }
+        setError('There was a problem checking domain availability. Some domains might not be available.');
       }
     } catch (error) {
       console.error('Error checking domain availability:', error);
-      if (isMounted.current) {
-        setError('There was a problem checking domain availability. Please try refreshing.');
-      }
+      setError('There was a problem checking domain availability. Please try refreshing.');
     } finally {
-      if (isMounted.current) {
-        setIsChecking(false);
-      }
+      setIsChecking(false);
     }
-  }, [items, updateItemAvailability, toast, removeItem, isChecking, error]);
+  };
   
-  // Setup and cleanup of availability checking
-  useEffect(() => {
-    // Reset the flag on mount
-    isMounted.current = true;
-    
-    // Perform initial check when items change
-    if (items.length > 0) {
-      // Wait a moment to avoid rapid checks if items are changing quickly
-      const initialCheckTimeout = setTimeout(() => {
-        if (isMounted.current) {
-          checkAvailability(true);
-        }
-      }, 300);
-      
-      // Clear any existing interval
-      if (checkIntervalRef.current) {
-        clearInterval(checkIntervalRef.current);
-        checkIntervalRef.current = null;
-      }
-      
-      // Set up a new interval for periodic checks
-      checkIntervalRef.current = setInterval(() => {
-        if (isMounted.current) {
-          checkAvailability();
-        }
-      }, 30000);
-      
-      // Cleanup function
-      return () => {
-        clearTimeout(initialCheckTimeout);
-        if (checkIntervalRef.current) {
-          clearInterval(checkIntervalRef.current);
-          checkIntervalRef.current = null;
-        }
-      };
-    } else {
-      // No items, clear any existing interval
-      if (checkIntervalRef.current) {
-        clearInterval(checkIntervalRef.current);
-        checkIntervalRef.current = null;
-      }
-      return () => {};
-    }
-  }, [items, checkAvailability]);
-  
-  // Cleanup on unmount
+  // Clear reservations when user navigates away or component unmounts
   useEffect(() => {
     return () => {
-      isMounted.current = false;
-      if (checkIntervalRef.current) {
-        clearInterval(checkIntervalRef.current);
-        checkIntervalRef.current = null;
-      }
-      
-      // Release reservations if unmounting with reservations
       if (hasReserved && user?.wallet_address) {
         // Release any domain reservations
         items.forEach(async (item) => {
@@ -275,6 +194,9 @@ export default function DomainCart({ onProceedToCheckout }: { onProceedToCheckou
       return;
     }
     
+    // First check availability before proceeding
+    await checkAvailability();
+    
     // Verify all domains are still available
     const unavailableDomains = items.filter(item => !item.available);
     if (unavailableDomains.length > 0) {
@@ -332,7 +254,8 @@ export default function DomainCart({ onProceedToCheckout }: { onProceedToCheckou
           removeItem(domain);
         });
         
-        await checkAvailability(true);
+        // Recheck availability for remaining domains
+        await checkAvailability();
         
         if (items.length === 0) {
           return; // No domains left to checkout
@@ -379,8 +302,7 @@ export default function DomainCart({ onProceedToCheckout }: { onProceedToCheckou
   };
 
   const handleRetryAvailabilityCheck = () => {
-    setError(null);
-    checkAvailability(true);
+    checkAvailability();
   };
 
   return (
@@ -481,6 +403,26 @@ export default function DomainCart({ onProceedToCheckout }: { onProceedToCheckou
               </div>
             </div>
             
+            <div className="flex justify-between items-center mb-4">
+              <Button
+                variant="outline"
+                className="text-[#cfe6ff] border-[#473dc6]/60 hover:bg-[#473dc6]/20"
+                onClick={handleRetryAvailabilityCheck}
+                disabled={isChecking}
+              >
+                {isChecking ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                Check Availability
+              </Button>
+              
+              <span className="text-[#caa3d6] text-sm">
+                Last checked: {items.some(item => !item.available) ? "Some domains unavailable" : "All domains available"}
+              </span>
+            </div>
+            
             <div className="space-y-4">
               <Button 
                 className="w-full btn-shimmer bg-[#473dc6] hover:bg-[#5c51e6] text-white py-6 text-lg shadow-glow hover:shadow-glow-hover transition-all duration-300 font-urbanist"
@@ -508,7 +450,7 @@ export default function DomainCart({ onProceedToCheckout }: { onProceedToCheckou
                     <Button 
                       variant="outline" 
                       className="border-[#473dc6] text-[#cfe6ff] hover:bg-[#473dc6]/20 font-urbanist"
-                      onClick={(e) => login()}
+                      onClick={() => login()}
                     >
                       Connect Wallet
                     </Button>

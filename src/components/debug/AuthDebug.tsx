@@ -39,8 +39,8 @@ export default function AuthDebug() {
       const UAuth = (await import('@uauth/js')).default;
       const uauth = new UAuth({
         clientID: process.env.NEXT_PUBLIC_CLIENT_ID || '',
-        redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URI || 'http://localhost:3000',
-        scope: process.env.NEXT_PUBLIC_SCOPES || 'openid wallet profile',
+        redirectUri: process.env.NEXT_PUBLIC_REDIRECT_URI,
+        scope: process.env.NEXT_PUBLIC_SCOPES,
       });
       
       const authorization = await uauth.loginWithPopup();
@@ -93,12 +93,12 @@ export default function AuthDebug() {
           </div>
           
           <div className="flex flex-wrap gap-2 mt-4">
-            <button 
-              onClick={login}
-              className="bg-blue-600 text-white px-2 py-1 text-xs rounded"
-            >
-              Login
-            </button>
+          <button 
+  onClick={() => login()}
+  className="bg-blue-600 text-white px-2 py-1 text-xs rounded"
+>
+  Login
+</button>
             <button 
               onClick={handleForceLogin}
               className="bg-purple-600 text-white px-2 py-1 text-xs rounded"
