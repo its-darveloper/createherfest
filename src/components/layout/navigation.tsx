@@ -1,13 +1,14 @@
+// Modified Navigation component with wallet functionality removed
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Wallet, Loader2, ChevronDown, Calendar, MegaphoneIcon, Users, Library, Globe, HeartHandshake, BadgeHelp } from "lucide-react"
+import { Menu, X, Calendar, Users, Library, ChevronDown } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { typography } from "@/lib/utils/typography"
-import { useAuth } from "@/app/context/AuthContext"
 
 // Reorganized nav items with categories for mega menu
 const navCategories = [
@@ -38,21 +39,13 @@ const navCategories = [
       { path: "/blog", label: "Tech Blog" },
     ]
   },
-  // {
-  //   label: "Web3",
-  //   icon: <Globe className="h-5 w-5 text-[#caa3d6]" />,
-  //   items: [
-  //     { path: "/claim", label: "Claim .HER Domain", highlight: true },
-  //     { path: "/web3-education", label: "Web3 Basics" },
-  //     { path: "/blockchain-resources", label: "Developer Tools" },
-  //   ]
-  // },
 ]
 
 // Simple single-item nav links
 const singleNavItems = [
   { path: "https://tally.so/r/nWMoXj", label: "Partner", isExternal: true },
   { path: "/faqs", label: "FAQs" },
+  { path: "https://links.unstoppabledomains.com/e/c/eyJlbWFpbF9pZCI6ImRnU1dqUVVEQU9XYWt3SGptcE1CQVpWczFQdktIRWVHQUlMcEJkRzFLUT09IiwiaHJlZiI6Imh0dHBzOi8vdW5zdG9wcGFibGV3ZWIuY28vM1h0VllVNyIsImludGVybmFsIjoiOTY4ZDA1NTBlMzVjZTU5YTkzMDEiLCJsaW5rX2lkIjoyNjQwNX0/d1b2cff2e6009cc9a88f7bfadc66acf6ffb6cbfe632aeffb9f9704ec75ba57e8", label: "Claim .HER Domain" },
 ]
 
 const menuVariants = {
@@ -89,34 +82,7 @@ export function Navigation() {
   const [mounted, setMounted] = useState(false)
   const [windowWidth, setWindowWidth] = useState(0)
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
-  const { user, isLoading, login, logout } = useAuth()
   const menuRef = useRef<HTMLDivElement>(null)
-
-  // Truncate wallet address for display
-  const truncateAddress = (address: string) => {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  }
-
-  // Handle wallet connection
-  const handleConnectWallet = async () => {
-    try {
-      await login();
-      console.log("Wallet connected successfully");
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
-    }
-  }
-
-  // Handle wallet disconnection
-  const handleDisconnectWallet = async () => {
-    try {
-      await logout();
-      console.log("Wallet disconnected successfully");
-    } catch (error) {
-      console.error("Error disconnecting wallet:", error);
-    }
-  }
 
   // Handle initial client-side render
   useEffect(() => {
@@ -304,45 +270,14 @@ export function Navigation() {
                 </div>
               )}
 
-              {/* Desktop Buttons */}
+              {/* Desktop Register Button */}
               {!isMobile && (
                 <div className="hidden md:flex items-center space-x-3">
-                  {/* Wallet Connection Button */}
-                  {user ? (
-                    <Button
-                      onClick={handleDisconnectWallet}
-                      className="bg-[#473dc6]/20 border border-[#473dc6]/60 hover:bg-[#473dc6]/30 text-white transition-all duration-200 rounded-lg"
-                    >
-                      <Wallet className="mr-2 h-4 w-4" />
-                      <span className="mr-1">{user.sub}</span>
-                      <span className="text-xs opacity-70">({truncateAddress(user.wallet_address)})</span>
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleConnectWallet}
-                      className="bg-[#473dc6]/20 border border-[#473dc6]/60 hover:bg-[#473dc6]/30 text-white transition-all duration-200 rounded-lg"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Connecting...
-                        </>
-                      ) : (
-                        <>
-                          <Wallet className="mr-2 h-4 w-4" />
-                          Connect Wallet
-                        </>
-                      )}
-                    </Button>
-                  )}
-
-                  {/* Register Button */}
                   <Button
                     asChild
                     className="hidden md:flex bg-[#473dc6] hover:bg-[#5246e5] text-white
-                             shadow-md hover:shadow-lg hover:shadow-[#473dc6]/20
-                             transition-all duration-300 rounded-xl"
+                           shadow-md hover:shadow-lg hover:shadow-[#473dc6]/20
+                           transition-all duration-300 rounded-xl"
                   >
                     <Link
                       href="https://form.jotform.com/243616450118149"
@@ -506,54 +441,10 @@ export function Navigation() {
                 </motion.div>
               ))}
 
-              {/* Mobile Wallet Connection Button */}
-              <motion.div variants={itemVariants} className="py-4 mt-2">
-                {user ? (
-                  <div className="space-y-3">
-                    <div className="flex flex-col text-white py-3">
-                      <span className="text-white/70 text-sm">Connected as:</span>
-                      <span className="font-medium">{user.sub}</span>
-                      <span className="text-sm text-white/70 font-mono mt-1 truncate">
-                        {truncateAddress(user.wallet_address)}
-                      </span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={handleDisconnectWallet}
-                      className="w-full justify-start bg-white/5 border-white/20 hover:bg-white/10 text-white"
-                    >
-                      Disconnect Wallet
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      handleConnectWallet();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    disabled={isLoading}
-                    className="w-full bg-white/5 border-white/20 hover:bg-white/10 text-white"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Connecting...
-                      </>
-                    ) : (
-                      <>
-                        <Wallet className="mr-2 h-5 w-5" />
-                        Connect Wallet
-                      </>
-                    )}
-                  </Button>
-                )}
-              </motion.div>
-
               {/* Mobile Register Button */}
               <motion.div 
                 variants={itemVariants} 
-                className="py-4"
+                className="py-4 mt-6"
               >
                 <Button
                   asChild
