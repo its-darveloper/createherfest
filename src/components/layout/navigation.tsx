@@ -36,7 +36,6 @@ const navCategories = [
     items: [
       { path: "/resources", label: "Learning Resources" },
       { path: "/faqs", label: "FAQs" },
-      { path: "/blog", label: "Tech Blog" },
     ]
   },
 ]
