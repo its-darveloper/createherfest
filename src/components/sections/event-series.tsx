@@ -296,7 +296,7 @@ export function EventSeries() {
                       asChild
                     >
                       <Link 
-                        href="https://form.jotform.com/243616450118149" 
+                        href="https://form.jotform.com/250694376098167" 
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-center"

@@ -36,7 +36,7 @@ export function Footer() {
 
   const quickLinks: Record<string, FooterLink[]> = {
     'Engage': [
-      { label: 'Register', url: 'https://form.jotform.com/243616450118149', isExternal: true },
+      { label: 'Join', url: 'https://form.jotform.com/250694376098167', isExternal: true },
       { label: 'Volunteer', url: 'https://tally.so/r/wdjO1y', isExternal: true },
       { label: 'Contact Us', url: 'https://tally.so/r/nrdyaN', isExternal: true },
       { label: 'Apply to Teach', url: 'https://tally.so/r/wzJkBE', isExternal: true }

@@ -16,15 +16,16 @@ const navCategories = [
     label: "Events",
     icon: <Calendar className="h-5 w-5 text-[#caa3d6]" />,
     items: [
-      { path: "https://createherfest.fyi/event-calendar", label: "Event Calendar", isExternal: true },
+      { path: "https://createherfest.fyi/event-calendar", label: "Event Calendar", isExternal: true, highlight: true },
       { path: "https://tally.so/r/wzJkBE", label: "Speak at an Event", isExternal: true },
-      { path: "https://form.jotform.com/243616450118149", label: "Register for Event", isExternal: true, highlight: true },
+      
     ]
   },
   {
     label: "Community",
     icon: <Users className="h-5 w-5 text-[#caa3d6]" />,
     items: [
+      { path: "https://form.jotform.com/250694376098167", label: "Join the Community", isExternal: true },
       { path: "/mentors", label: "Mentors" },
       { path: "https://tally.so/r/wdjO1y", label: "Volunteer", isExternal: true },
       { path: "https://tally.so/r/nWMoXj", label: "Partner with Us", isExternal: true },
@@ -279,7 +280,7 @@ export function Navigation() {
                            transition-all duration-300 rounded-xl"
                   >
                     <Link
-                      href="https://form.jotform.com/243616450118149"
+                      href="https://form.jotform.com/250694376098167"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center"
@@ -452,7 +453,7 @@ export function Navigation() {
                            transition-all duration-300 rounded-xl"
                 >
                   <Link
-                    href="https://form.jotform.com/243616450118149"
+                    href="https://form.jotform.com/250694376098167"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full text-lg"

@@ -106,7 +106,7 @@ export function Hero() {
                        px-6 md:px-12 py-5 md:py-7 text-base md:text-lg min-w-[160px] md:min-w-[180px]"
             >
               <Link 
-                href="https://form.jotform.com/243616450118149"
+                href="https://form.jotform.com/250694376098167"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center"
